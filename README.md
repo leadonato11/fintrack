@@ -10,17 +10,20 @@ App de seguimiento de gastos personales y compartidos.
 
 ## Estructura
 
-fintrack/
-├── css/
-│   └── style.css
-├── js/
-│   ├── app.js
-│   └── auth.js
-│   └── db.js
-├── index.html
-├── manifest.json
-├── sw.js
-└── README.md
+    fintrack/
+    ├── css/
+    │   └── style.css
+    ├── js/
+    │   ├── app.js
+    │   ├── auth.js
+    │   └── db.js
+    ├── icons/
+    │   ├── icon-192.png
+    │   └── icon-512.png
+    ├── index.html
+    ├── manifest.json
+    ├── sw.js
+    └── README.md
 
 ## Cómo correr localmente
 
