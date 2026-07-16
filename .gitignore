@@ -1,0 +1,6 @@
+# Variables de entorno — NUNCA subir al repo
+.env
+
+# Carpetas que genera el sistema, no son código
+.DS_Store
+node_modules/
