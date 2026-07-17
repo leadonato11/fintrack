@@ -93,8 +93,6 @@ function mostrarPantalla(id) {
 
 async function entrarApp() {
   mostrarPantalla('mainScreen')
-  // Primero cargamos las transacciones del mes actual
-  // y DESPUÉS mostramos la UI
   await recargarTransacciones()
   showTab('income')
   renderAll()
