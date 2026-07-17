@@ -4,8 +4,6 @@
 // usuario) con los datos (Supabase).
 // ============================================
 
-import { login, register, loginWithGoogle, logout, getSession, onAuthChange } from './auth.js'
-import { getTransactions, saveTransaction, deleteTransaction, getUserGroup, getGroupMembers, createGroup, addMemberToGroup } from './db.js'
 import { getTransactions, saveTransaction, deleteTransaction, 
          getUserGroup, getGroupMembers, createGroup, 
          addMemberToGroup, invitarUsuario } from './db.js'
