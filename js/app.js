@@ -91,8 +91,11 @@ function mostrarPantalla(id) {
   document.getElementById(id)?.classList.add('active')
 }
 
-function entrarApp() {
+async function entrarApp() {
   mostrarPantalla('mainScreen')
+  // Primero cargamos las transacciones del mes actual
+  // y DESPUÉS mostramos la UI
+  await recargarTransacciones()
   showTab('income')
   renderAll()
 }
