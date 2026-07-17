@@ -146,3 +146,19 @@ export async function getGroupMembers(groupId) {
   if (error) return []
   return data
 }
+
+// Invitar a un usuario al grupo por email
+export async function invitarUsuario(email, groupId) {
+  const { data, error } = await supabase
+    .rpc('invitar_a_grupo', {
+      email_invitado: email,
+      grupo_id: groupId
+    })
+
+  if (error) {
+    console.error('Error invitando:', error)
+    return { ok: false, mensaje: 'Error al invitar. Intentá de nuevo.' }
+  }
+
+  return data
+}

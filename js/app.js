@@ -6,7 +6,10 @@
 
 import { login, register, loginWithGoogle, logout, getSession, onAuthChange } from './auth.js'
 import { getTransactions, saveTransaction, deleteTransaction, getUserGroup, getGroupMembers, createGroup, addMemberToGroup } from './db.js'
-
+import { getTransactions, saveTransaction, deleteTransaction, 
+         getUserGroup, getGroupMembers, createGroup, 
+         addMemberToGroup, invitarUsuario } from './db.js'
+         
 // ============================================
 // ESTADO GLOBAL
 // Una sola variable que tiene todo lo que
@@ -577,8 +580,25 @@ window.showInvite = function() {
 }
 
 window.doInvite = async function() {
-  notify('Función de invitar próximamente')
+  const email = document.getElementById('invEmail').value.trim().toLowerCase()
+  const err = document.getElementById('invErr')
+  err.textContent = ''
+
+  if (!email) { err.textContent = 'Ingresá un email'; return }
+  if (!state.user?.groupId) { err.textContent = 'No tenés un grupo creado'; return }
+
+  const result = await invitarUsuario(email, state.user.groupId)
+
+  if (!result.ok) {
+    err.textContent = result.mensaje
+    return
+  }
+
+  // Actualizar la lista de miembros localmente
+  state.groupMembers.push(result.usuario_id)
   closeM('invModal')
+  renderSettings()
+  notify('¡Invitación enviada! ✓')
 }
 
 // ============================================
