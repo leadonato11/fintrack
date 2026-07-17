@@ -4,11 +4,14 @@
 // usuario) con los datos (Supabase).
 // ============================================
 
+// Imports de auth.js
+import { login, register, loginWithGoogle, logout, getSession, onAuthChange } from './auth.js'
+
+// Imports de db.js
 import { getTransactions, saveTransaction, deleteTransaction, 
          getUserGroup, getGroupMembers, createGroup, 
          addMemberToGroup, invitarUsuario } from './db.js'
-         
-         
+               
 // ============================================
 // ESTADO GLOBAL
 // Una sola variable que tiene todo lo que
