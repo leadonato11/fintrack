@@ -11,8 +11,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
 // TUS CREDENCIALES — reemplazá con las tuyas
-const SUPABASE_URL = window._env?.SUPABASE_URL || ''
-const SUPABASE_KEY = window._env?.SUPABASE_KEY || ''
+const SUPABASE_URL = 'https://rwvhcqckjthtzxoqoimf.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_L2IX4j5k5tSEVBM-jHP33Q_GjbFF0Ac'
 
 // Creamos la conexión. "supabase" es el objeto
 // que vamos a usar en toda la app para leer y
