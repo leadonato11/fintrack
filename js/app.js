@@ -8,6 +8,7 @@ import { getTransactions, saveTransaction, deleteTransaction,
          getUserGroup, getGroupMembers, createGroup, 
          addMemberToGroup, invitarUsuario } from './db.js'
          
+         
 // ============================================
 // ESTADO GLOBAL
 // Una sola variable que tiene todo lo que
