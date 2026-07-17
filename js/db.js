@@ -69,14 +69,27 @@ export async function deleteTransaction(id) {
 
 // Trae el grupo del usuario (su "pareja/familia")
 export async function getUserGroup(userId) {
-  const { data, error } = await supabase
+  // Primero buscamos el group_id del usuario
+  const { data: member, error: memberError } = await supabase
     .from('group_members')
-    .select('group_id, groups(id, name)')
+    .select('group_id')
     .eq('user_id', userId)
-    .single()
+    .maybeSingle() // maybeSingle en lugar de single
+                   // single() da error si no encuentra nada
+                   // maybeSingle() devuelve null sin error
 
-  if (error) return null
-  return data
+  if (memberError || !member) return null
+
+  // Después buscamos el grupo por separado
+  const { data: group, error: groupError } = await supabase
+    .from('groups')
+    .select('id, name')
+    .eq('id', member.group_id)
+    .maybeSingle()
+
+  if (groupError || !group) return null
+
+  return { group_id: member.group_id, groups: group }
 }
 
 // Crea un grupo nuevo y agrega al usuario como primer miembro
