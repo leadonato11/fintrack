@@ -148,19 +148,14 @@ export async function getGroupMembers(groupId) {
     .select('user_id')
     .eq('group_id', groupId)
 
-  console.log('group_members data:', data, 'error:', error)
-
   if (error) return []
 
   const ids = data.map(m => m.user_id)
-  console.log('ids a buscar:', ids)
-  
+
   const { data: profiles, error: profError } = await supabase
     .from('profiles')
     .select('id, name, email')
     .in('id', ids)
-
-  console.log('profiles data:', profiles, 'error:', profError)
 
   if (profError) return []
   return profiles
