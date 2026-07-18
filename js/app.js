@@ -326,7 +326,9 @@ function renderSettings() {
   document.getElementById('hGreet').textContent = 'Hola, ' + u.name.split(' ')[0] + ' 👋'
 
   document.getElementById('uList').innerHTML = state.groupMembers.length
-    ? state.groupMembers.map(member => {
+  ? state.groupMembers
+      .filter(member => member && member.id) // filtrar elementos inválidos
+      .map(member => {
         const esYo = member.id === state.user.id
         const nombre = member.name || member.email?.split('@')[0] || 'Usuario'
         return `<div class="urow">
@@ -338,7 +340,7 @@ function renderSettings() {
           <span class="ubadge ${esYo ? 'bme' : 'bother'}">${esYo ? 'Vos' : 'Grupo'}</span>
         </div>`
       }).join('')
-    : '<p style="font-size:13px;color:var(--text2)">Todavía no invitaste a nadie.</p>'
+  : '<p style="font-size:13px;color:var(--text2)">Todavía no invitaste a nadie.</p>'
 }
 
 // ============================================
