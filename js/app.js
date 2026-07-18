@@ -558,31 +558,21 @@ window.closeM = function (id) {
 };
 
 function popularSocios() {
-  const uid = state.user?.id;
-  const peers = state.groupMembers.filter((id) => id !== uid);
+  const uid = state.user?.id
+  // groupMembers es array de objetos { id, name, email }
+  const peers = state.groupMembers.filter(m => m.id !== uid)
 
-  document.getElementById("txPartner").innerHTML = peers.length
-    ? peers
-        .map(
-          (id) => `<option value="${id}">${esc(nombreDeUsuario(id))}</option>`
-        )
-        .join("")
-    : '<option value="">Sin compañeros aún</option>';
+  document.getElementById('txPartner').innerHTML = peers.length
+    ? peers.map(m => `<option value="${m.id}">${esc(m.name || m.email)}</option>`).join('')
+    : '<option value="">Sin compañeros aún</option>'
 
-  document.getElementById("txPayer").innerHTML = [uid, ...peers]
-    .map(
-      (id) =>
-        `<option value="${id}">${esc(
-          id === uid ? state.user.name : nombreDeUsuario(id)
-        )}</option>`
-    )
-    .join("");
+  const yo = { id: uid, name: state.user.name }
+  document.getElementById('txPayer').innerHTML = [yo, ...peers]
+    .map(m => `<option value="${m.id}">${esc(m.name || m.email)}</option>`)
+    .join('')
 
-  document.getElementById("pLbl1").textContent =
-    (state.user?.name || "Vos") + " (%)";
-  if (peers[0])
-    document.getElementById("pLbl2").textContent =
-      nombreDeUsuario(peers[0]) + " (%)";
+  document.getElementById('pLbl1').textContent = (state.user?.name || 'Vos') + ' (%)'
+  if (peers[0]) document.getElementById('pLbl2').textContent = (peers[0].name || peers[0].email) + ' (%)'
 }
 
 window.selType = function (type) {
