@@ -11,7 +11,7 @@ import { login, register, loginWithGoogle, logout, getSession, onAuthChange } fr
 import { getTransactions, saveTransaction, deleteTransaction, 
          getUserGroup, getGroupMembers, createGroup, 
          addMemberToGroup, invitarUsuario } from './db.js'
-               
+
 // ============================================
 // ESTADO GLOBAL
 // Una sola variable que tiene todo lo que
@@ -596,11 +596,19 @@ window.doInvite = async function() {
     return
   }
 
-  // Actualizar la lista de miembros localmente
-  state.groupMembers.push(result.usuario_id)
+  // Si el usuario ya existía, actualizar lista local
+  if (result.usuario_id) {
+    state.groupMembers.push(result.usuario_id)
+    renderSettings()
+  }
+
   closeM('invModal')
-  renderSettings()
-  notify('¡Invitación enviada! ✓')
+
+  // Mensaje diferente según si era usuario existente o invitación nueva
+  notify(result.pendiente
+    ? '📧 Invitación enviada por email'
+    : '✓ Usuario agregado al grupo'
+  )
 }
 
 // ============================================
