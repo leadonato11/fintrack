@@ -27,7 +27,7 @@ export async function register(name, email, password) {
 
   // 2. Crear un grupo propio para este usuario
   // (cuando invite a alguien, ese alguien entra a este grupo)
-  await createGroup(userId)
+  await createGroup(userId, name, email)
 
   return { ok: true, user: data.user }
 }

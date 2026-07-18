@@ -325,14 +325,16 @@ function renderSettings() {
   av.style.background = colorAvatar(u.name)
   document.getElementById('hGreet').textContent = 'Hola, ' + u.name.split(' ')[0] + ' 👋'
 
-  // Mostrar miembros del grupo
-  document.getElementById('uList').innerHTML = state.groupMembers.length > 1
-    ? state.groupMembers.map(uid => {
-        const name = nombreDeUsuario(uid)
-        const esYo = uid === state.user.id
+  document.getElementById('uList').innerHTML = state.groupMembers.length
+    ? state.groupMembers.map(member => {
+        const esYo = member.id === state.user.id
+        const nombre = member.name || member.email?.split('@')[0] || 'Usuario'
         return `<div class="urow">
-          <div class="avatar" style="background:${colorAvatar(name)};width:36px;height:36px;font-size:13px">${iniciales(name)}</div>
-          <div class="uinfo"><div class="uname">${esc(name)}</div></div>
+          <div class="avatar" style="background:${colorAvatar(nombre)};width:36px;height:36px;font-size:13px">${iniciales(nombre)}</div>
+          <div class="uinfo">
+            <div class="uname">${esc(nombre)}</div>
+            <div class="uemail">${esc(member.email || '')}</div>
+          </div>
           <span class="ubadge ${esYo ? 'bme' : 'bother'}">${esYo ? 'Vos' : 'Grupo'}</span>
         </div>`
       }).join('')
@@ -632,10 +634,10 @@ function colorAvatar(name) {
   return AVATAR_COLORS[Math.abs(h)]
 }
 
-// Por ahora devuelve el ID hasta que tengamos perfiles completos
 function nombreDeUsuario(uid) {
   if (uid === state.user?.id) return state.user.name
-  return uid?.slice(0, 8) + '...'
+  const member = state.groupMembers.find(m => m.id === uid)
+  return member?.name || member?.email?.split('@')[0] || 'Usuario'
 }
 
 // ============================================

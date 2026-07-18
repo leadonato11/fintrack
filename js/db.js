@@ -92,9 +92,8 @@ export async function getUserGroup(userId) {
   return { group_id: member.group_id, groups: group }
 }
 
-// Crea un grupo nuevo y agrega al usuario como primer miembro
-export async function createGroup(userId) {
-  // Primero creamos el grupo
+export async function createGroup(userId, userName, userEmail) {
+  // Crear el grupo
   const { data: group, error: groupError } = await supabase
     .from('groups')
     .insert([{ name: 'Mi grupo' }])
@@ -103,12 +102,18 @@ export async function createGroup(userId) {
 
   if (groupError) { console.error('Error creando grupo:', groupError); return null }
 
-  // Después agregamos al usuario a ese grupo
+  // Agregar al usuario como miembro
   const { error: memberError } = await supabase
     .from('group_members')
     .insert([{ group_id: group.id, user_id: userId }])
 
   if (memberError) { console.error('Error agregando miembro:', memberError); return null }
+
+  // Guardar el perfil
+  await supabase
+    .from('profiles')
+    .upsert([{ id: userId, name: userName, email: userEmail }])
+
   return group
 }
 
@@ -136,7 +141,7 @@ export async function addMemberToGroup(groupId, userId) {
   return true
 }
 
-// Trae todos los miembros del grupo
+// Trae todos los miembros del grupo con su perfil
 export async function getGroupMembers(groupId) {
   const { data, error } = await supabase
     .from('group_members')
@@ -144,7 +149,16 @@ export async function getGroupMembers(groupId) {
     .eq('group_id', groupId)
 
   if (error) return []
-  return data
+
+  // Traer los perfiles de cada miembro
+  const ids = data.map(m => m.user_id)
+  const { data: profiles, error: profError } = await supabase
+    .from('profiles')
+    .select('id, name, email')
+    .in('id', ids)
+
+  if (profError) return []
+  return profiles
 }
 
 // Invitar a un usuario al grupo por email
