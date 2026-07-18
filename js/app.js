@@ -600,19 +600,18 @@ window.doInvite = async function() {
     return
   }
 
-  // Si el usuario ya existía, actualizar lista local
-  if (result.usuario_id) {
-    state.groupMembers.push(result.usuario_id)
-    renderSettings()
-  }
-
   closeM('invModal')
-
-  // Mensaje diferente según si era usuario existente o invitación nueva
   notify(result.pendiente
     ? '📧 Invitación enviada por email'
     : '✓ Usuario agregado al grupo'
   )
+
+  // Recargar los miembros completos desde Supabase
+  // en lugar de agregar solo el ID localmente
+  if (state.user.groupId) {
+    state.groupMembers = await getGroupMembers(state.user.groupId)
+  }
+  renderSettings()
 }
 
 // ============================================
