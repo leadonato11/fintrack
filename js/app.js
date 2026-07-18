@@ -73,14 +73,16 @@ async function init() {
 // ============================================
 async function cargarGrupo() {
   const g = await getUserGroup(state.user.id)
+  console.log('grupo encontrado:', g)
+  
   if (g) {
     state.group = g
     state.user.groupId = g.group_id
     const members = await getGroupMembers(g.group_id)
-    state.groupMembers = members.map(m => m.user_id)
+    console.log('miembros encontrados:', members)
+    state.groupMembers = members
   } else {
-    // Si no tiene grupo, crearle uno
-    const newGroup = await createGroup(state.user.id)
+    const newGroup = await createGroup(state.user.id, state.user.name, state.user.email)
     if (newGroup) {
       state.group = { group_id: newGroup.id }
       state.user.groupId = newGroup.id
