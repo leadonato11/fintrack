@@ -80,12 +80,19 @@ export async function getSession() {
   if (!data.session) return null
 
   const user = data.session.user
+
+  // Traer el nombre desde profiles en lugar de los metadatos
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, email')
+    .eq('id', user.id)
+    .maybeSingle()
+
   const group = await getUserGroup(user.id)
 
-  // Devolvemos un objeto limpio con lo que necesita la app
   return {
     id: user.id,
-    name: user.user_metadata?.full_name || user.email.split('@')[0],
+    name: profile?.name || user.user_metadata?.full_name || user.email.split('@')[0],
     email: user.email,
     groupId: group?.group_id || null
   }
