@@ -246,20 +246,30 @@ function renderAll() {
 }
 
 function updateSummary() {
-  const { inc, exp, sh } = calcSummary();
+  const { inc, exp, sh } = calcSummary()
   const sv = state.transactions
-    .filter((t) => t.type === "saving" && t.user_id === state.user?.id)
-    .reduce((s, t) => s + Number(t.amount), 0);
-  const bal = Math.max(0, inc - exp - sh - sv);
+    .filter(t => t.type === 'saving' && t.user_id === state.user?.id)
+    .reduce((s, t) => s + Number(t.amount), 0)
+  const bal = inc - exp - sh - sv
 
-  document.getElementById("sInc").textContent = fmt(inc);
-  document.getElementById("sExp").textContent = fmt(exp);
-  document.getElementById("sSh").textContent = fmt(sh);
-  document.getElementById("sBal").textContent = fmt(bal);
-  document.getElementById("mLabel").textContent =
-    MONTHS[state.month] + " " + state.year;
-  document.getElementById("hDate").textContent =
-    MONTHS[state.month].toLowerCase() + " " + state.year;
+  document.getElementById('sInc').textContent = fmt(inc)
+  document.getElementById('sExp').textContent = fmt(exp)
+  document.getElementById('sSh').textContent = fmt(sh)
+
+  // Saldo: verde si positivo, rojo si negativo o cero
+  const balEl = document.getElementById('sBal')
+  balEl.textContent = fmt(Math.abs(bal))
+  if (bal < 0) {
+    balEl.className = 'val v-red'
+    balEl.textContent = '−' + fmt(Math.abs(bal))
+  } else if (bal === 0) {
+    balEl.className = 'val v-red'
+  } else {
+    balEl.className = 'val v-blue'
+  }
+
+  document.getElementById('mLabel').textContent = MONTHS[state.month] + ' ' + state.year
+  document.getElementById('hDate').textContent = MONTHS[state.month].toLowerCase() + ' ' + state.year
 }
 
 // ============================================
@@ -596,6 +606,23 @@ window.selType = function(type) {
   })
   document.getElementById('shFields').style.display = type === 'shared' ? 'block' : 'none'
   toggleCamposAhorro(type === 'saving')
+
+  // Mostrar saldo disponible solo para gastos y compartidos
+  const saldoInfo = document.getElementById('saldoInfo')
+  if (type === 'expense' || type === 'shared') {
+    const { inc, exp, sh } = calcSummary()
+    const sv = state.transactions
+      .filter(t => t.type === 'saving' && t.user_id === state.user?.id)
+      .reduce((s, t) => s + Number(t.amount), 0)
+    const saldo = inc - exp - sh - sv
+    const saldoEl = document.getElementById('saldoDisponibleModal')
+    saldoEl.textContent = fmt(Math.abs(saldo))
+    saldoEl.style.color = saldo <= 0 ? 'var(--danger)' : 'var(--accent)'
+    if (saldo <= 0) saldoEl.textContent = '−' + fmt(Math.abs(saldo))
+    saldoInfo.style.display = 'block'
+  } else {
+    saldoInfo.style.display = 'none'
+  }
 }
 
 window.togPct = function () {
@@ -609,15 +636,27 @@ document.getElementById("pct1")?.addEventListener("input", function () {
     100 - Math.min(100, Math.max(0, parseInt(this.value) || 0));
 });
 
-window.saveTx = async function () {
-  const amount = parseFloat(document.getElementById("txAmt").value);
-  const desc = document.getElementById("txDesc").value.trim();
-  const cat = document.getElementById("txCat").value;
-  const type = state.selectedType;
+window.saveTx = async function() {
+  const amount = parseFloat(document.getElementById('txAmt').value)
+  const desc = document.getElementById('txDesc').value.trim()
+  const cat = document.getElementById('txCat').value
+  const type = state.selectedType
 
-  if (!amount || amount <= 0) {
-    notify("Ingresá un monto válido");
-    return;
+  if (!amount || amount <= 0) { notify('Ingresá un monto válido'); return }
+
+  // Verificar saldo disponible para gastos y compartidos
+  if (type === 'expense' || type === 'shared') {
+    const { inc, exp, sh } = calcSummary()
+    const sv = state.transactions
+      .filter(t => t.type === 'saving' && t.user_id === state.user?.id)
+      .reduce((s, t) => s + Number(t.amount), 0)
+    const saldoDisponible = inc - exp - sh - sv
+
+    if (amount > saldoDisponible) {
+      // Mostrar confirmación
+      const continuar = await mostrarConfirmacionSaldo(saldoDisponible, amount)
+      if (!continuar) return
+    }
   }
 
   const tx = {
@@ -630,46 +669,81 @@ window.saveTx = async function () {
     month: state.month,
     year: state.year,
     my_pct: 50,
-    partner_pct: 50,
-  };
+    partner_pct: 50
+  }
 
-  if (type === "shared") {
-    const partnerId = document.getElementById("txPartner").value;
-    const payerId = document.getElementById("txPayer").value;
-    if (!partnerId) {
-      notify("No hay compañeros en el grupo todavía");
-      return;
-    }
-    tx.partner_id = partnerId;
-    tx.payer_id = payerId;
+  if (type === 'shared') {
+    const partnerId = document.getElementById('txPartner').value
+    const payerId = document.getElementById('txPayer').value
+    if (!partnerId) { notify('No hay compañeros en el grupo todavía'); return }
+    tx.partner_id = partnerId
+    tx.payer_id = payerId
     if (state.pctMode) {
-      tx.my_pct = Math.min(
-        100,
-        Math.max(0, parseInt(document.getElementById("pct1").value) || 50)
-      );
-      tx.partner_pct = 100 - tx.my_pct;
+      tx.my_pct = Math.min(100, Math.max(0, parseInt(document.getElementById('pct1').value) || 50))
+      tx.partner_pct = 100 - tx.my_pct
     }
   }
 
-  const saved = await saveTransaction(tx);
-  if (!saved) {
-    notify("Error al guardar. Intentá de nuevo.");
-    return;
-  }
+  const saved = await saveTransaction(tx)
+  if (!saved) { notify('Error al guardar. Intentá de nuevo.'); return }
 
-  state.transactions.unshift(saved);
-  closeM("addModal");
-  renderAll();
-  notify("¡Guardado! ✓");
-  showTab(
-    {
-      income: "income",
-      expense: "expense",
-      shared: "shared",
-      saving: "savings",
-    }[type] || "income"
-  );
-};
+  state.transactions.unshift(saved)
+  closeM('addModal')
+  renderAll()
+  notify('¡Guardado! ✓')
+  showTab({ income:'income', expense:'expense', shared:'shared', saving:'savings' }[type] || 'income')
+}
+
+function mostrarConfirmacionSaldo(saldoDisponible, montoIngresado) {
+  return new Promise(resolve => {
+    // Crear modal de confirmación dinámicamente
+    const overlay = document.createElement('div')
+    overlay.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 200; display: flex; align-items: center;
+      justify-content: center; padding: 1.5rem;
+    `
+
+    const esNegativo = saldoDisponible <= 0
+
+    overlay.innerHTML = `
+      <div style="background: var(--card); border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 340px;">
+        <div style="text-align:center; margin-bottom: 1rem;">
+          <span style="font-size: 36px">${esNegativo ? '🚨' : '⚠️'}</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px; text-align:center;">
+          ${esNegativo ? 'Sin saldo disponible' : 'Saldo insuficiente'}
+        </h3>
+        <p style="font-size: 14px; color: var(--text2); text-align:center; margin-bottom: 1.25rem; line-height:1.5">
+          ${esNegativo
+            ? `No tenés saldo disponible. Este gasto de <strong>${fmt(montoIngresado)}</strong> va a generar un déficit.`
+            : `Tu saldo disponible es <strong>${fmt(saldoDisponible)}</strong> y estás por gastar <strong>${fmt(montoIngresado)}</strong>.`
+          }
+          <br><br>¿Querés registrarlo igual?
+        </p>
+        <div style="display:flex; gap: 10px;">
+          <button id="btnCancelarSaldo" style="flex:1; padding:12px; border: 1px solid var(--border); border-radius: 10px; background: none; font-size:14px; cursor:pointer; color: var(--text2);">
+            Cancelar
+          </button>
+          <button id="btnConfirmarSaldo" style="flex:1; padding:12px; background: var(--danger); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+            Registrar igual
+          </button>
+        </div>
+      </div>
+    `
+
+    document.body.appendChild(overlay)
+
+    document.getElementById('btnConfirmarSaldo').onclick = () => {
+      document.body.removeChild(overlay)
+      resolve(true)
+    }
+    document.getElementById('btnCancelarSaldo').onclick = () => {
+      document.body.removeChild(overlay)
+      resolve(false)
+    }
+  })
+}
 
 window.delTx = async function (id) {
   const ok = await deleteTransaction(id);
