@@ -1046,3 +1046,25 @@ input[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
+
+/* Badge en tab de compartidos */
+.titem {
+  position: relative;
+}
+
+.tab-badge {
+  position: absolute;
+  top: 6px;
+  right: 14px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}

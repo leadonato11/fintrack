@@ -349,6 +349,22 @@ function renderShared() {
   document.getElementById("shList").innerHTML = txs.length
     ? txs.map((t) => sharedCard(t)).join("")
     : empty("No hay gastos compartidos este mes");
+
+  // Badge en tab de compartidos
+  const tabShared = document.getElementById("ti-shared");
+  const badgeExistente = tabShared.querySelector(".tab-badge");
+  if (badgeExistente) badgeExistente.remove();
+
+  const totalDeuda = Object.values(debts).reduce(
+    (sum, amt) => sum + Math.abs(amt),
+    0,
+  );
+  if (totalDeuda > 0) {
+    const badge = document.createElement("span");
+    badge.className = "tab-badge";
+    badge.textContent = "!";
+    tabShared.appendChild(badge);
+  }
 }
 
 let svChart = null;
