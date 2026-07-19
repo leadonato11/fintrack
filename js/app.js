@@ -539,19 +539,32 @@ function empty(msg) {
 // ============================================
 // MODAL — AGREGAR TRANSACCIÓN
 // ============================================
-window.openAdd = function () {
-  selType("income");
-  document.getElementById("txAmt").value = "";
-  document.getElementById("txDesc").value = "";
-  document.getElementById("txCat").value = "general";
-  state.pctMode = false;
-  document.getElementById("pctSw").classList.remove("on");
-  document.getElementById("pctF").classList.remove("show");
-  document.getElementById("pct1").value = 50;
-  document.getElementById("pct2").value = 50;
-  popularSocios();
-  document.getElementById("addModal").classList.add("open");
-};
+window.openAdd = function() {
+  selType('income')
+  document.getElementById('txAmt').value = ''
+  document.getElementById('txDesc').value = ''
+  document.getElementById('txCat').value = 'general'
+  state.pctMode = false
+  document.getElementById('pctSw').classList.remove('on')
+  document.getElementById('pctF').classList.remove('show')
+  document.getElementById('pct1').value = 50
+  document.getElementById('pct2').value = 50
+  popularSocios()
+  toggleCamposAhorro(false)
+  document.getElementById('addModal').classList.add('open')
+}
+
+function toggleCamposAhorro(esAhorro) {
+  const descRow = document.getElementById('descRow')
+  const catRow = document.getElementById('catRow')
+  if (esAhorro) {
+    descRow.style.display = 'none'
+    catRow.style.display = 'none'
+  } else {
+    descRow.style.display = 'block'
+    catRow.style.display = 'block'
+  }
+}
 
 window.closeM = function (id) {
   document.getElementById(id).classList.remove("open");
@@ -575,15 +588,15 @@ function popularSocios() {
   if (peers[0]) document.getElementById('pLbl2').textContent = (peers[0].name || peers[0].email) + ' (%)'
 }
 
-window.selType = function (type) {
-  state.selectedType = type;
-  ["income", "expense", "shared", "saving"].forEach((t) => {
-    const b = document.getElementById("b" + t[0].toUpperCase() + t.slice(1));
-    if (b) b.className = "tbtn" + (t === type ? " t-" + t : "");
-  });
-  document.getElementById("shFields").style.display =
-    type === "shared" ? "block" : "none";
-};
+window.selType = function(type) {
+  state.selectedType = type
+  ;['income','expense','shared','saving'].forEach(t => {
+    const b = document.getElementById('b' + t[0].toUpperCase() + t.slice(1))
+    if (b) b.className = 'tbtn' + (t === type ? ' t-' + t : '')
+  })
+  document.getElementById('shFields').style.display = type === 'shared' ? 'block' : 'none'
+  toggleCamposAhorro(type === 'saving')
+}
 
 window.togPct = function () {
   state.pctMode = !state.pctMode;
