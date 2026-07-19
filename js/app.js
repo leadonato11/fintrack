@@ -355,11 +355,9 @@ function renderShared() {
   const badgeExistente = tabShared.querySelector(".tab-badge");
   if (badgeExistente) badgeExistente.remove();
 
-  const totalDeuda = Object.values(debts).reduce(
-    (sum, amt) => sum + Math.abs(amt),
-    0,
-  );
-  if (totalDeuda > 0) {
+  // Badge solo cuando YO debo a alguien (valor negativo)
+  const tengoDeudas = Object.values(debts).some((amt) => amt < 0);
+  if (tengoDeudas) {
     const badge = document.createElement("span");
     badge.className = "tab-badge";
     badge.textContent = "!";
