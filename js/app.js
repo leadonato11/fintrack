@@ -112,7 +112,7 @@ async function cargarGrupo(esRegistroNuevo = false) {
     const newGroup = await createGroup(
       state.user.id,
       state.user.name,
-      state.user.email
+      state.user.email,
     );
     if (newGroup) {
       state.group = { group_id: newGroup.id };
@@ -190,7 +190,7 @@ async function recargarTransacciones() {
     state.user.id,
     state.user.groupId,
     state.month,
-    state.year
+    state.year,
   );
   renderAll();
 }
@@ -246,30 +246,38 @@ function renderAll() {
 }
 
 function updateSummary() {
-  const { inc, exp, sh } = calcSummary()
+  const { inc, exp, sh } = calcSummary();
   const sv = state.transactions
-    .filter(t => t.type === 'saving' && t.user_id === state.user?.id)
-    .reduce((s, t) => s + Number(t.amount), 0)
-  const bal = inc - exp - sh - sv
+    .filter((t) => t.type === "saving" && t.user_id === state.user?.id)
+    .reduce((s, t) => s + Number(t.amount), 0);
+  const bal = inc - exp - sh - sv;
 
-  document.getElementById('sInc').textContent = fmt(inc)
-  document.getElementById('sExp').textContent = fmt(exp)
-  document.getElementById('sSh').textContent = fmt(sh)
+  document.getElementById("sInc").textContent = fmt(inc);
+  document.getElementById("sExp").textContent = fmt(exp);
+  document.getElementById("sSh").textContent = fmt(sh);
 
   // Saldo: verde si positivo, rojo si negativo o cero
-  const balEl = document.getElementById('sBal')
-  balEl.textContent = fmt(Math.abs(bal))
+  const balEl = document.getElementById("sBal");
+  const balLbl = document.getElementById("sBalLbl");
+
   if (bal < 0) {
-    balEl.className = 'val v-red'
-    balEl.textContent = '−' + fmt(Math.abs(bal))
+    balEl.className = "val v-red";
+    balEl.textContent = "−" + fmt(Math.abs(bal));
+    balLbl.textContent = "En déficit";
   } else if (bal === 0) {
-    balEl.className = 'val v-red'
+    balEl.className = "val v-red";
+    balEl.textContent = fmt(0);
+    balLbl.textContent = "En déficit";
   } else {
-    balEl.className = 'val v-blue'
+    balEl.className = "val v-blue";
+    balEl.textContent = fmt(bal);
+    balLbl.textContent = "Saldo libre";
   }
 
-  document.getElementById('mLabel').textContent = MONTHS[state.month] + ' ' + state.year
-  document.getElementById('hDate').textContent = MONTHS[state.month].toLowerCase() + ' ' + state.year
+  document.getElementById("mLabel").textContent =
+    MONTHS[state.month] + " " + state.year;
+  document.getElementById("hDate").textContent =
+    MONTHS[state.month].toLowerCase() + " " + state.year;
 }
 
 // ============================================
@@ -277,7 +285,7 @@ function updateSummary() {
 // ============================================
 function renderIncome() {
   const txs = state.transactions.filter(
-    (t) => t.type === "income" && t.user_id === state.user?.id
+    (t) => t.type === "income" && t.user_id === state.user?.id,
   );
   document.getElementById("incList").innerHTML = txs.length
     ? txs.map((t) => txCard(t, "income")).join("")
@@ -286,7 +294,7 @@ function renderIncome() {
 
 function renderExpense() {
   const txs = state.transactions.filter(
-    (t) => t.type === "expense" && t.user_id === state.user?.id
+    (t) => t.type === "expense" && t.user_id === state.user?.id,
   );
   document.getElementById("expList").innerHTML = txs.length
     ? txs.map((t) => txCard(t, "expense")).join("")
@@ -298,7 +306,7 @@ function renderShared() {
   const txs = state.transactions.filter(
     (t) =>
       t.type === "shared" &&
-      (t.user_id === uid || t.payer_id === uid || t.partner_id === uid)
+      (t.user_id === uid || t.payer_id === uid || t.partner_id === uid),
   );
 
   // Calcular quién le debe a quién
@@ -321,14 +329,14 @@ function renderShared() {
       ${
         amt > 0
           ? `<span>${esc(
-              name
+              name,
             )} te debe</span><span style="color:var(--accent)">${fmt(
-              Math.abs(amt)
+              Math.abs(amt),
             )}</span>`
           : `<span>Debés a ${esc(
-              name
+              name,
             )}</span><span style="color:var(--danger)">${fmt(
-              Math.abs(amt)
+              Math.abs(amt),
             )}</span>`
       }
     </div>`;
@@ -347,7 +355,7 @@ let svChart = null;
 function renderSavings() {
   const uid = state.user?.id;
   const svTxs = state.transactions.filter(
-    (t) => t.type === "saving" && t.user_id === uid
+    (t) => t.type === "saving" && t.user_id === uid,
   );
   const { inc, exp, sh } = calcSummary();
   const intencional = svTxs.reduce((s, t) => s + Number(t.amount), 0);
@@ -431,7 +439,7 @@ function renderSettings() {
             member.name || member.email?.split("@")[0] || "Usuario";
           return `<div class="urow">
           <div class="avatar" style="background:${colorAvatar(
-            nombre
+            nombre,
           )};width:36px;height:36px;font-size:13px">${iniciales(nombre)}</div>
           <div class="uinfo">
             <div class="uname">${esc(nombre)}</div>
@@ -488,9 +496,9 @@ function txCard(t, type) {
     <div class="txbody">
       <div class="txtit">${esc(t.description || t.category)}</div>
       <div class="txsub">${esc(t.category)} · ${MONTHS[t.month].slice(
-    0,
-    3
-  )}</div>
+        0,
+        3,
+      )}</div>
     </div>
     <div>
       <div class="txamt ${vc}">${sign}${fmt(Number(t.amount))}</div>
@@ -523,8 +531,8 @@ function sharedCard(t) {
     <div class="txbody">
       <div class="txtit">${esc(t.description || t.category)}</div>
       <div class="txsub">${paidBy} · Total ${fmt(
-    Number(t.amount)
-  )} · Tu parte ${fmt(myPart)}</div>
+        Number(t.amount),
+      )} · Tu parte ${fmt(myPart)}</div>
     </div>
     <div>
       <div class="txamt v-purple">${fmt(Number(t.amount))}</div>
@@ -549,30 +557,30 @@ function empty(msg) {
 // ============================================
 // MODAL — AGREGAR TRANSACCIÓN
 // ============================================
-window.openAdd = function() {
-  selType('income')
-  document.getElementById('txAmt').value = ''
-  document.getElementById('txDesc').value = ''
-  document.getElementById('txCat').value = 'general'
-  state.pctMode = false
-  document.getElementById('pctSw').classList.remove('on')
-  document.getElementById('pctF').classList.remove('show')
-  document.getElementById('pct1').value = 50
-  document.getElementById('pct2').value = 50
-  popularSocios()
-  toggleCamposAhorro(false)
-  document.getElementById('addModal').classList.add('open')
-}
+window.openAdd = function () {
+  selType("income");
+  document.getElementById("txAmt").value = "";
+  document.getElementById("txDesc").value = "";
+  document.getElementById("txCat").value = "general";
+  state.pctMode = false;
+  document.getElementById("pctSw").classList.remove("on");
+  document.getElementById("pctF").classList.remove("show");
+  document.getElementById("pct1").value = 50;
+  document.getElementById("pct2").value = 50;
+  popularSocios();
+  toggleCamposAhorro(false);
+  document.getElementById("addModal").classList.add("open");
+};
 
 function toggleCamposAhorro(esAhorro) {
-  const descRow = document.getElementById('descRow')
-  const catRow = document.getElementById('catRow')
+  const descRow = document.getElementById("descRow");
+  const catRow = document.getElementById("catRow");
   if (esAhorro) {
-    descRow.style.display = 'none'
-    catRow.style.display = 'none'
+    descRow.style.display = "none";
+    catRow.style.display = "none";
   } else {
-    descRow.style.display = 'block'
-    catRow.style.display = 'block'
+    descRow.style.display = "block";
+    catRow.style.display = "block";
   }
 }
 
@@ -581,49 +589,57 @@ window.closeM = function (id) {
 };
 
 function popularSocios() {
-  const uid = state.user?.id
+  const uid = state.user?.id;
   // groupMembers es array de objetos { id, name, email }
-  const peers = state.groupMembers.filter(m => m.id !== uid)
+  const peers = state.groupMembers.filter((m) => m.id !== uid);
 
-  document.getElementById('txPartner').innerHTML = peers.length
-    ? peers.map(m => `<option value="${m.id}">${esc(m.name || m.email)}</option>`).join('')
-    : '<option value="">Sin compañeros aún</option>'
+  document.getElementById("txPartner").innerHTML = peers.length
+    ? peers
+        .map(
+          (m) => `<option value="${m.id}">${esc(m.name || m.email)}</option>`,
+        )
+        .join("")
+    : '<option value="">Sin compañeros aún</option>';
 
-  const yo = { id: uid, name: state.user.name }
-  document.getElementById('txPayer').innerHTML = [yo, ...peers]
-    .map(m => `<option value="${m.id}">${esc(m.name || m.email)}</option>`)
-    .join('')
+  const yo = { id: uid, name: state.user.name };
+  document.getElementById("txPayer").innerHTML = [yo, ...peers]
+    .map((m) => `<option value="${m.id}">${esc(m.name || m.email)}</option>`)
+    .join("");
 
-  document.getElementById('pLbl1').textContent = (state.user?.name || 'Vos') + ' (%)'
-  if (peers[0]) document.getElementById('pLbl2').textContent = (peers[0].name || peers[0].email) + ' (%)'
+  document.getElementById("pLbl1").textContent =
+    (state.user?.name || "Vos") + " (%)";
+  if (peers[0])
+    document.getElementById("pLbl2").textContent =
+      (peers[0].name || peers[0].email) + " (%)";
 }
 
-window.selType = function(type) {
-  state.selectedType = type
-  ;['income','expense','shared','saving'].forEach(t => {
-    const b = document.getElementById('b' + t[0].toUpperCase() + t.slice(1))
-    if (b) b.className = 'tbtn' + (t === type ? ' t-' + t : '')
-  })
-  document.getElementById('shFields').style.display = type === 'shared' ? 'block' : 'none'
-  toggleCamposAhorro(type === 'saving')
+window.selType = function (type) {
+  state.selectedType = type;
+  ["income", "expense", "shared", "saving"].forEach((t) => {
+    const b = document.getElementById("b" + t[0].toUpperCase() + t.slice(1));
+    if (b) b.className = "tbtn" + (t === type ? " t-" + t : "");
+  });
+  document.getElementById("shFields").style.display =
+    type === "shared" ? "block" : "none";
+  toggleCamposAhorro(type === "saving");
 
   // Mostrar saldo disponible solo para gastos y compartidos
-  const saldoInfo = document.getElementById('saldoInfo')
-  if (type === 'expense' || type === 'shared') {
-    const { inc, exp, sh } = calcSummary()
+  const saldoInfo = document.getElementById("saldoInfo");
+  if (type === "expense" || type === "shared") {
+    const { inc, exp, sh } = calcSummary();
     const sv = state.transactions
-      .filter(t => t.type === 'saving' && t.user_id === state.user?.id)
-      .reduce((s, t) => s + Number(t.amount), 0)
-    const saldo = inc - exp - sh - sv
-    const saldoEl = document.getElementById('saldoDisponibleModal')
-    saldoEl.textContent = fmt(Math.abs(saldo))
-    saldoEl.style.color = saldo <= 0 ? 'var(--danger)' : 'var(--accent)'
-    if (saldo <= 0) saldoEl.textContent = '−' + fmt(Math.abs(saldo))
-    saldoInfo.style.display = 'block'
+      .filter((t) => t.type === "saving" && t.user_id === state.user?.id)
+      .reduce((s, t) => s + Number(t.amount), 0);
+    const saldo = inc - exp - sh - sv;
+    const saldoEl = document.getElementById("saldoDisponibleModal");
+    saldoEl.textContent = fmt(Math.abs(saldo));
+    saldoEl.style.color = saldo <= 0 ? "var(--danger)" : "var(--accent)";
+    if (saldo <= 0) saldoEl.textContent = "−" + fmt(Math.abs(saldo));
+    saldoInfo.style.display = "block";
   } else {
-    saldoInfo.style.display = 'none'
+    saldoInfo.style.display = "none";
   }
-}
+};
 
 window.togPct = function () {
   state.pctMode = !state.pctMode;
@@ -636,26 +652,29 @@ document.getElementById("pct1")?.addEventListener("input", function () {
     100 - Math.min(100, Math.max(0, parseInt(this.value) || 0));
 });
 
-window.saveTx = async function() {
-  const amount = parseFloat(document.getElementById('txAmt').value)
-  const desc = document.getElementById('txDesc').value.trim()
-  const cat = document.getElementById('txCat').value
-  const type = state.selectedType
+window.saveTx = async function () {
+  const amount = parseFloat(document.getElementById("txAmt").value);
+  const desc = document.getElementById("txDesc").value.trim();
+  const cat = document.getElementById("txCat").value;
+  const type = state.selectedType;
 
-  if (!amount || amount <= 0) { notify('Ingresá un monto válido'); return }
+  if (!amount || amount <= 0) {
+    notify("Ingresá un monto válido");
+    return;
+  }
 
   // Verificar saldo disponible para gastos y compartidos
-  if (type === 'expense' || type === 'shared') {
-    const { inc, exp, sh } = calcSummary()
+  if (type === "expense" || type === "shared") {
+    const { inc, exp, sh } = calcSummary();
     const sv = state.transactions
-      .filter(t => t.type === 'saving' && t.user_id === state.user?.id)
-      .reduce((s, t) => s + Number(t.amount), 0)
-    const saldoDisponible = inc - exp - sh - sv
+      .filter((t) => t.type === "saving" && t.user_id === state.user?.id)
+      .reduce((s, t) => s + Number(t.amount), 0);
+    const saldoDisponible = inc - exp - sh - sv;
 
     if (amount > saldoDisponible) {
       // Mostrar confirmación
-      const continuar = await mostrarConfirmacionSaldo(saldoDisponible, amount)
-      if (!continuar) return
+      const continuar = await mostrarConfirmacionSaldo(saldoDisponible, amount);
+      if (!continuar) return;
     }
   }
 
@@ -669,55 +688,72 @@ window.saveTx = async function() {
     month: state.month,
     year: state.year,
     my_pct: 50,
-    partner_pct: 50
-  }
+    partner_pct: 50,
+  };
 
-  if (type === 'shared') {
-    const partnerId = document.getElementById('txPartner').value
-    const payerId = document.getElementById('txPayer').value
-    if (!partnerId) { notify('No hay compañeros en el grupo todavía'); return }
-    tx.partner_id = partnerId
-    tx.payer_id = payerId
+  if (type === "shared") {
+    const partnerId = document.getElementById("txPartner").value;
+    const payerId = document.getElementById("txPayer").value;
+    if (!partnerId) {
+      notify("No hay compañeros en el grupo todavía");
+      return;
+    }
+    tx.partner_id = partnerId;
+    tx.payer_id = payerId;
     if (state.pctMode) {
-      tx.my_pct = Math.min(100, Math.max(0, parseInt(document.getElementById('pct1').value) || 50))
-      tx.partner_pct = 100 - tx.my_pct
+      tx.my_pct = Math.min(
+        100,
+        Math.max(0, parseInt(document.getElementById("pct1").value) || 50),
+      );
+      tx.partner_pct = 100 - tx.my_pct;
     }
   }
 
-  const saved = await saveTransaction(tx)
-  if (!saved) { notify('Error al guardar. Intentá de nuevo.'); return }
+  const saved = await saveTransaction(tx);
+  if (!saved) {
+    notify("Error al guardar. Intentá de nuevo.");
+    return;
+  }
 
-  state.transactions.unshift(saved)
-  closeM('addModal')
-  renderAll()
-  notify('¡Guardado! ✓')
-  showTab({ income:'income', expense:'expense', shared:'shared', saving:'savings' }[type] || 'income')
-}
+  state.transactions.unshift(saved);
+  closeM("addModal");
+  renderAll();
+  notify("¡Guardado! ✓");
+  showTab(
+    {
+      income: "income",
+      expense: "expense",
+      shared: "shared",
+      saving: "savings",
+    }[type] || "income",
+  );
+};
 
 function mostrarConfirmacionSaldo(saldoDisponible, montoIngresado) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     // Crear modal de confirmación dinámicamente
-    const overlay = document.createElement('div')
+    const overlay = document.createElement("div");
     overlay.style.cssText = `
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       z-index: 200; display: flex; align-items: center;
       justify-content: center; padding: 1.5rem;
-    `
+    `;
 
-    const esNegativo = saldoDisponible <= 0
+    const esNegativo = saldoDisponible <= 0;
 
     overlay.innerHTML = `
       <div style="background: var(--card); border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 340px;">
         <div style="text-align:center; margin-bottom: 1rem;">
-          <span style="font-size: 36px">${esNegativo ? '🚨' : '⚠️'}</span>
+          <span style="font-size: 36px">${esNegativo ? "🚨" : "⚠️"}</span>
         </div>
         <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px; text-align:center;">
-          ${esNegativo ? 'Sin saldo disponible' : 'Saldo insuficiente'}
+          ${esNegativo ? "Sin saldo disponible" : "Saldo insuficiente"}
         </h3>
         <p style="font-size: 14px; color: var(--text2); text-align:center; margin-bottom: 1.25rem; line-height:1.5">
-          ${esNegativo
-            ? `No tenés saldo disponible. Este gasto de <strong>${fmt(montoIngresado)}</strong> va a generar un déficit.`
-            : `Tu saldo disponible es <strong>${fmt(saldoDisponible)}</strong> y estás por gastar <strong>${fmt(montoIngresado)}</strong>.`
+          ${
+            esNegativo
+              ? `No tenés saldo disponible. Este gasto de <strong>${fmt(montoIngresado)}</strong> va a generar un déficit.`
+              : `Tu saldo disponible es <strong>${fmt(saldoDisponible)}</strong> y estás por gastar <strong>${fmt(montoIngresado)}</strong>.`
           }
           <br><br>¿Querés registrarlo igual?
         </p>
@@ -730,19 +766,19 @@ function mostrarConfirmacionSaldo(saldoDisponible, montoIngresado) {
           </button>
         </div>
       </div>
-    `
+    `;
 
-    document.body.appendChild(overlay)
+    document.body.appendChild(overlay);
 
-    document.getElementById('btnConfirmarSaldo').onclick = () => {
-      document.body.removeChild(overlay)
-      resolve(true)
-    }
-    document.getElementById('btnCancelarSaldo').onclick = () => {
-      document.body.removeChild(overlay)
-      resolve(false)
-    }
-  })
+    document.getElementById("btnConfirmarSaldo").onclick = () => {
+      document.body.removeChild(overlay);
+      resolve(true);
+    };
+    document.getElementById("btnCancelarSaldo").onclick = () => {
+      document.body.removeChild(overlay);
+      resolve(false);
+    };
+  });
 }
 
 window.delTx = async function (id) {
@@ -763,7 +799,7 @@ window.switchAuthTab = function (tab) {
   document
     .querySelectorAll(".auth-tab")
     .forEach((t, i) =>
-      t.classList.toggle("active", (i === 0) === (tab === "login"))
+      t.classList.toggle("active", (i === 0) === (tab === "login")),
     );
   document.getElementById("loginForm").style.display =
     tab === "login" ? "flex" : "none";
@@ -771,40 +807,46 @@ window.switchAuthTab = function (tab) {
     tab === "register" ? "flex" : "none";
 };
 
-window.doLogin = async function() {
-  const email = document.getElementById('lEmail').value.trim().toLowerCase()
-  const pass = document.getElementById('lPass').value
-  const err = document.getElementById('lErr')
-  err.textContent = ''
+window.doLogin = async function () {
+  const email = document.getElementById("lEmail").value.trim().toLowerCase();
+  const pass = document.getElementById("lPass").value;
+  const err = document.getElementById("lErr");
+  err.textContent = "";
 
-  const result = await login(email, pass)
-  if (!result.ok) { err.textContent = result.message; return }
+  const result = await login(email, pass);
+  if (!result.ok) {
+    err.textContent = result.message;
+    return;
+  }
 
-  state.user = await getSession()
-  await cargarGrupo(false) // false = login normal, nunca crear grupo
-  entrarApp()
-}
+  state.user = await getSession();
+  await cargarGrupo(false); // false = login normal, nunca crear grupo
+  entrarApp();
+};
 
-window.doRegister = async function() {
-  const name = document.getElementById('rName').value.trim()
-  const email = document.getElementById('rEmail').value.trim().toLowerCase()
-  const pass = document.getElementById('rPass').value
-  const err = document.getElementById('rErr')
-  err.textContent = ''
+window.doRegister = async function () {
+  const name = document.getElementById("rName").value.trim();
+  const email = document.getElementById("rEmail").value.trim().toLowerCase();
+  const pass = document.getElementById("rPass").value;
+  const err = document.getElementById("rErr");
+  err.textContent = "";
 
-  const result = await register(name, email, pass)
-  if (!result.ok) { err.textContent = result.message; return }
+  const result = await register(name, email, pass);
+  if (!result.ok) {
+    err.textContent = result.message;
+    return;
+  }
 
   // Después del registro, logueamos automáticamente
-  const loginResult = await login(email, pass)
+  const loginResult = await login(email, pass);
   if (loginResult.ok) {
-    state.user = await getSession()
-    await cargarGrupo(true) // true = es registro nuevo, crear grupo
-    entrarApp()
+    state.user = await getSession();
+    await cargarGrupo(true); // true = es registro nuevo, crear grupo
+    entrarApp();
   } else {
-    notify('¡Cuenta creada! Revisá tu email para confirmar.')
+    notify("¡Cuenta creada! Revisá tu email para confirmar.");
   }
-}
+};
 
 window.doGoogle = async function () {
   await loginWithGoogle();
@@ -850,7 +892,7 @@ window.doInvite = async function () {
   notify(
     result.pendiente
       ? "📧 Invitación enviada por email"
-      : "✓ Usuario agregado al grupo"
+      : "✓ Usuario agregado al grupo",
   );
 
   // Recargar los miembros completos desde Supabase
