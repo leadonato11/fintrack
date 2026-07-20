@@ -26,6 +26,8 @@ import {
   invitarUsuario,
 } from "./db.js";
 
+import { initTheme, checkDiaEspecial, applyTheme } from "./theme.js";
+
 // ============================================
 // ESTADO GLOBAL
 // Una sola variable que tiene todo lo que
@@ -62,6 +64,8 @@ const MONTHS = [
 // Lo primero que corre cuando carga la app
 // ============================================
 async function init() {
+  initTheme();
+  checkDiaEspecial();
   mostrarCargando(true);
 
   // ¿Hay alguien logueado?
@@ -167,6 +171,10 @@ window.showTab = function (name) {
     name === "settings" ? "none" : "flex";
   if (name === "savings") renderSavings();
 };
+
+window.setTheme = function(mode) {
+  applyTheme(mode)
+}
 
 // ============================================
 // CAMBIO DE MES
