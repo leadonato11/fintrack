@@ -581,7 +581,7 @@ input[type="number"] { appearance: textfield; }
 .tcontent {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-md) 1.25rem 6rem;
+  padding: var(--space-md) 1.25rem calc(6rem + env(safe-area-inset-bottom));
   background: var(--bg);
 }
 .tpanel        { display: none; }
@@ -882,7 +882,7 @@ input[type="number"] { appearance: textfield; }
    ============================================ */
 .fab {
   position: fixed;
-  bottom: 1.5rem;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 3rem);
