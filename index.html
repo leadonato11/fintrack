@@ -527,6 +527,31 @@
             <p class="stitle" style="margin-top: 1.25rem">Grupo</p>
             <div id="uList" class="ulist"></div>
 
+            <button
+              class="lgbtn"
+              style="
+                color: var(--celeste-dark);
+                border-color: var(--celeste-mid);
+              "
+              onclick="showExport()"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Exportar datos
+            </button>
+
             <button class="lgbtn" onclick="doLogout()">
               <svg
                 width="18"
@@ -809,6 +834,165 @@
           </button>
           <button class="btn-save" onclick="doInvite()">Agregar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EXPORTAR -->
+    <div
+      class="mbg"
+      id="exportModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Exportar datos"
+    >
+      <div class="modal">
+        <div class="mdrag"></div>
+        <h3>Exportar datos</h3>
+
+        <!-- Período -->
+        <p class="stitle">Período</p>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 1rem;
+          "
+        >
+          <button
+            class="export-period-btn active"
+            data-period="mensual"
+            onclick="selectPeriod('mensual')"
+          >
+            Este mes
+          </button>
+          <button
+            class="export-period-btn"
+            data-period="trimestral"
+            onclick="selectPeriod('trimestral')"
+          >
+            Trimestral
+          </button>
+          <button
+            class="export-period-btn"
+            data-period="semestral"
+            onclick="selectPeriod('semestral')"
+          >
+            Semestral
+          </button>
+          <button
+            class="export-period-btn"
+            data-period="anual"
+            onclick="selectPeriod('anual')"
+          >
+            Anual
+          </button>
+        </div>
+        <button
+          class="export-period-btn"
+          data-period="personalizado"
+          onclick="selectPeriod('personalizado')"
+          style="width: 100%; margin-bottom: 1rem"
+        >
+          Personalizado
+        </button>
+
+        <!-- Rango personalizado -->
+        <div
+          id="customRange"
+          style="display: none; gap: 10px; margin-bottom: 1rem; display: none"
+        >
+          <div class="frow">
+            <label>Desde</label>
+            <input type="month" id="exportDesde" />
+          </div>
+          <div class="frow">
+            <label>Hasta</label>
+            <input type="month" id="exportHasta" />
+          </div>
+        </div>
+
+        <!-- Tipos a incluir -->
+        <p class="stitle">Incluir</p>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+          "
+        >
+          <label class="export-check">
+            <input type="checkbox" id="chkIncome" checked /> Ingresos
+          </label>
+          <label class="export-check">
+            <input type="checkbox" id="chkExpense" checked /> Gastos
+          </label>
+          <label class="export-check">
+            <input type="checkbox" id="chkShared" checked /> Compartidos
+          </label>
+          <label class="export-check">
+            <input type="checkbox" id="chkSaving" checked /> Ahorros
+          </label>
+        </div>
+
+        <!-- Formato -->
+        <p class="stitle">Formato</p>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+          "
+        >
+          <button
+            class="btn-export-fmt"
+            id="btnExcel"
+            onclick="doExport('excel')"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="9" y1="15" x2="15" y2="15" />
+            </svg>
+            Excel (.xlsx)
+          </button>
+          <button class="btn-export-fmt" id="btnPDF" onclick="doExport('pdf')">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <polyline points="14 2 14 8 20 8" />
+              <path d="M9 13h6M9 17h3" />
+            </svg>
+            PDF
+          </button>
+        </div>
+
+        <button class="btn-cancel" onclick="closeM('exportModal')">
+          Cancelar
+        </button>
       </div>
     </div>
 

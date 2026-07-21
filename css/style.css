@@ -1196,3 +1196,65 @@ body.special-cumple .fab {
 .txi, .mcrd {
   animation: fadeIn 0.3s ease both;
 }
+
+/* ============================================
+   EXPORTADOR
+   ============================================ */
+.export-period-btn {
+  padding: 10px;
+  border-radius: var(--rad-md);
+  border: 1.5px solid var(--border);
+  background: var(--card2);
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.export-period-btn:hover { background: var(--celeste-light); }
+.export-period-btn.active {
+  border-color: var(--celeste);
+  background: var(--celeste-light);
+  color: var(--celeste-dark);
+}
+
+.export-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text1);
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: var(--rad-md);
+  border: 1.5px solid var(--border);
+  background: var(--card2);
+}
+.export-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--celeste);
+}
+
+.btn-export-fmt {
+  padding: 14px;
+  border-radius: var(--rad-md);
+  border: 1.5px solid var(--border);
+  background: var(--card2);
+  color: var(--text1);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.btn-export-fmt:hover {
+  border-color: var(--celeste);
+  background: var(--celeste-light);
+  color: var(--celeste-dark);
+}

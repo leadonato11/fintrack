@@ -28,6 +28,8 @@ import {
 
 import { initTheme, checkDiaEspecial, applyTheme } from "./theme.js";
 
+import { exportarExcel, exportarPDF, calcularRango } from "./export.js";
+
 // ============================================
 // ESTADO GLOBAL
 // Una sola variable que tiene todo lo que
@@ -172,9 +174,9 @@ window.showTab = function (name) {
   if (name === "savings") renderSavings();
 };
 
-window.setTheme = function(mode) {
-  applyTheme(mode)
-}
+window.setTheme = function (mode) {
+  applyTheme(mode);
+};
 
 // ============================================
 // CAMBIO DE MES
@@ -956,6 +958,98 @@ function nombreDeUsuario(uid) {
   if (uid === state.user?.id) return state.user.name;
   const member = state.groupMembers.find((m) => m.id === uid);
   return member?.name || member?.email?.split("@")[0] || "Usuario";
+}
+
+// ============================================
+// EXPORTADOR
+// ============================================
+let exportPeriodo = 'mensual'
+
+window.showExport = function() {
+  exportPeriodo = 'mensual'
+  document.querySelectorAll('.export-period-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.period === 'mensual')
+  )
+  document.getElementById('customRange').style.display = 'none'
+
+  // Setear mes actual como default en personalizado
+  const now = new Date()
+  const mesStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
+  document.getElementById('exportDesde').value = mesStr
+  document.getElementById('exportHasta').value = mesStr
+
+  document.getElementById('exportModal').classList.add('open')
+}
+
+window.selectPeriod = function(periodo) {
+  exportPeriodo = periodo
+  document.querySelectorAll('.export-period-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.period === periodo)
+  )
+  document.getElementById('customRange').style.display =
+    periodo === 'personalizado' ? 'grid' : 'none'
+}
+
+window.doExport = async function(formato) {
+  // Obtener tipos seleccionados
+  const tipos = []
+  if (document.getElementById('chkIncome').checked)  tipos.push('income')
+  if (document.getElementById('chkExpense').checked) tipos.push('expense')
+  if (document.getElementById('chkShared').checked)  tipos.push('shared')
+  if (document.getElementById('chkSaving').checked)  tipos.push('saving')
+
+  if (!tipos.length) { notify('Seleccioná al menos un tipo'); return }
+
+  // Calcular rango
+  let desdeCustom, hastaCustom
+  if (exportPeriodo === 'personalizado') {
+    const desdeVal = document.getElementById('exportDesde').value
+    const hastaVal = document.getElementById('exportHasta').value
+    if (!desdeVal || !hastaVal) { notify('Completá el rango de fechas'); return }
+    const [dy, dm] = desdeVal.split('-').map(Number)
+    const [hy, hm] = hastaVal.split('-').map(Number)
+    desdeCustom = new Date(dy, dm - 1, 1)
+    hastaCustom = new Date(hy, hm - 1, 1)
+  }
+
+  const { desde, hasta } = calcularRango(
+    exportPeriodo,
+    state.month,
+    state.year,
+    desdeCustom,
+    hastaCustom
+  )
+
+  const opciones = { desde, hasta, tipos }
+
+  closeM('exportModal')
+  notify('Generando archivo...')
+
+  try {
+    // Traer TODAS las transacciones del rango desde Supabase
+    const { getTransactions } = await import('./db.js')
+    let todasLasTxs = []
+    let mes = desde.getMonth()
+    let anio = desde.getFullYear()
+
+    while (new Date(anio, mes, 1) <= hasta) {
+      const txsMes = await getTransactions(state.user.id, state.user.groupId, mes, anio)
+      todasLasTxs = [...todasLasTxs, ...txsMes]
+      mes++
+      if (mes > 11) { mes = 0; anio++ }
+    }
+
+    if (formato === 'excel') {
+      await exportarExcel(todasLasTxs, state.groupMembers, state.user.id, opciones)
+      notify('✓ Excel descargado')
+    } else {
+      await exportarPDF(todasLasTxs, state.groupMembers, state.user.id, opciones)
+      notify('✓ PDF descargado')
+    }
+  } catch (err) {
+    console.error('Error exportando:', err)
+    notify('Error al generar el archivo')
+  }
 }
 
 // ============================================
