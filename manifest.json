@@ -2,7 +2,7 @@
     "name": "FinTrack",
     "short_name": "FinTrack",
     "description": "Seguimiento de gastos personales y compartidos",
-    "start_url": "/",
+    "start_url": "/fintrack/",
     "display": "standalone",
     "background_color": "#1D9E75",
     "theme_color": "#1D9E75",
