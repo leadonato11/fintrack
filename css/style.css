@@ -594,7 +594,7 @@ input[type="number"] { appearance: textfield; }
   display: none;
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-md) 1.25rem calc(5rem + env(safe-area-inset-bottom));
+  padding: var(--space-md) 1.25rem calc(7rem + env(safe-area-inset-bottom));
 }
 
 .tpanel.active { display: flex; flex-direction: column; }

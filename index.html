@@ -8,7 +8,10 @@
     width=device-width = usá el ancho real del dispositivo
     initial-scale=1.0  = sin zoom inicial
   -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="mobile-web-app-capable" content="yes" />
     <!-- Título que aparece en la pestaña del navegador -->
     <title>FinTrack</title>
@@ -109,6 +112,7 @@
                 id="lPass"
                 placeholder="••••••••"
                 autocomplete="current-password"
+                onkeydown="if (event.key === 'Enter') doLogin();"
               />
             </div>
 
@@ -167,6 +171,7 @@
                 id="rPass"
                 placeholder="Mínimo 6 caracteres"
                 autocomplete="new-password"
+                onkeydown="if (event.key === 'Enter') doRegister();"
               />
             </div>
             <div
@@ -425,106 +430,32 @@
           </div>
 
           <!-- PERFIL / SETTINGS -->
-          <div class="tpanel" id="p-settings" role="tabpanel">
-            <p class="stitle">Mi cuenta</p>
-            <div class="spanel">
-              <div class="theme-toggle">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-                <span>Tema</span>
-                <div class="theme-btns">
-                  <button
-                    class="theme-btn"
-                    data-mode="light"
-                    onclick="setTheme('light')"
-                  >
-                    ☀️ Claro
-                  </button>
-                  <button
-                    class="theme-btn active"
-                    data-mode="auto"
-                    onclick="setTheme('auto')"
-                  >
-                    🕐 Auto
-                  </button>
-                  <button
-                    class="theme-btn"
-                    data-mode="dark"
-                    onclick="setTheme('dark')"
-                  >
-                    🌙 Oscuro
-                  </button>
-                </div>
-              </div>
-              <div class="sitem">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <span id="sName">—</span>
-                <span class="sval" id="sEmail">—</span>
-              </div>
-              <div class="sitem" onclick="showInvite()">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="8.5" cy="7" r="4" />
-                  <line x1="20" y1="8" x2="20" y2="14" />
-                  <line x1="23" y1="11" x2="17" y2="11" />
-                </svg>
-                <span>Invitar al grupo</span>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  style="margin-left: auto; color: var(--text2)"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </div>
-            </div>
+         <p class="stitle">Apariencia</p>
+<div class="spanel">
+  <div class="theme-toggle">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <span>Tema</span>
+    <div class="theme-btns">
+      <button class="theme-btn" data-mode="light" onclick="setTheme('light')">☀️ Claro</button>
+      <button class="theme-btn active" data-mode="auto" onclick="setTheme('auto')">🕐 Auto</button>
+      <button class="theme-btn" data-mode="dark" onclick="setTheme('dark')">🌙 Oscuro</button>
+    </div>
+  </div>
+</div>
 
-            <p class="stitle" style="margin-top: 1.25rem">Grupo</p>
+<p class="stitle" style="margin-top:1.25rem">Mi cuenta</p>
+<div class="spanel">
+  <div class="sitem">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span id="sName">—</span>
+    <span class="sval" id="sEmail">—</span>
+  </div>
+  <div class="sitem" onclick="showInvite()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+    <span>Invitar al grupo</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;color:var(--text2)"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+</div>
             <div id="uList" class="ulist"></div>
 
             <button
