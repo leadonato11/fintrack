@@ -547,16 +547,16 @@ function sharedCard(t) {
     : (Number(t.amount) * Number(t.partner_pct)) / 100;
   const paidBy = iAmPayer ? "Pagaste vos" : `Pagó ${esc(partnerName)}`;
   const canDel = t.user_id === uid || t.payer_id === uid;
+  // Si lo cargó el otro usuario, aplicar clase by-other
+  const byOther = t.user_id !== uid ? "by-other" : "";
 
-  return `<div class="txi">
+  return `<div class="txi ${byOther}">
     <div class="txico sh">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C6FCD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     </div>
     <div class="txbody">
       <div class="txtit">${esc(t.description || t.category)}</div>
-      <div class="txsub">${paidBy} · Total ${fmt(
-        Number(t.amount),
-      )} · Tu parte ${fmt(myPart)}</div>
+      <div class="txsub">${paidBy} · Total ${fmt(Number(t.amount))} · Tu parte ${fmt(myPart)}</div>
     </div>
     <div>
       <div class="txamt v-purple">${fmt(Number(t.amount))}</div>
@@ -963,53 +963,61 @@ function nombreDeUsuario(uid) {
 // ============================================
 // EXPORTADOR
 // ============================================
-let exportPeriodo = 'mensual'
+let exportPeriodo = "mensual";
 
-window.showExport = function() {
-  exportPeriodo = 'mensual'
-  document.querySelectorAll('.export-period-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.period === 'mensual')
-  )
-  document.getElementById('customRange').style.display = 'none'
+window.showExport = function () {
+  exportPeriodo = "mensual";
+  document
+    .querySelectorAll(".export-period-btn")
+    .forEach((b) =>
+      b.classList.toggle("active", b.dataset.period === "mensual"),
+    );
+  document.getElementById("customRange").style.display = "none";
 
   // Setear mes actual como default en personalizado
-  const now = new Date()
-  const mesStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
-  document.getElementById('exportDesde').value = mesStr
-  document.getElementById('exportHasta').value = mesStr
+  const now = new Date();
+  const mesStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  document.getElementById("exportDesde").value = mesStr;
+  document.getElementById("exportHasta").value = mesStr;
 
-  document.getElementById('exportModal').classList.add('open')
-}
+  document.getElementById("exportModal").classList.add("open");
+};
 
-window.selectPeriod = function(periodo) {
-  exportPeriodo = periodo
-  document.querySelectorAll('.export-period-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.period === periodo)
-  )
-  document.getElementById('customRange').style.display =
-    periodo === 'personalizado' ? 'grid' : 'none'
-}
+window.selectPeriod = function (periodo) {
+  exportPeriodo = periodo;
+  document
+    .querySelectorAll(".export-period-btn")
+    .forEach((b) => b.classList.toggle("active", b.dataset.period === periodo));
+  document.getElementById("customRange").style.display =
+    periodo === "personalizado" ? "grid" : "none";
+};
 
-window.doExport = async function(formato) {
+window.doExport = async function (formato) {
   // Obtener tipos seleccionados
-  const tipos = []
-  if (document.getElementById('chkIncome').checked)  tipos.push('income')
-  if (document.getElementById('chkExpense').checked) tipos.push('expense')
-  if (document.getElementById('chkShared').checked)  tipos.push('shared')
-  if (document.getElementById('chkSaving').checked)  tipos.push('saving')
+  const tipos = [];
+  if (document.getElementById("chkIncome").checked) tipos.push("income");
+  if (document.getElementById("chkExpense").checked) tipos.push("expense");
+  if (document.getElementById("chkShared").checked) tipos.push("shared");
+  if (document.getElementById("chkSaving").checked) tipos.push("saving");
 
-  if (!tipos.length) { notify('Seleccioná al menos un tipo'); return }
+  if (!tipos.length) {
+    notify("Seleccioná al menos un tipo");
+    return;
+  }
 
   // Calcular rango
-  let desdeCustom, hastaCustom
-  if (exportPeriodo === 'personalizado') {
-    const desdeVal = document.getElementById('exportDesde').value
-    const hastaVal = document.getElementById('exportHasta').value
-    if (!desdeVal || !hastaVal) { notify('Completá el rango de fechas'); return }
-    const [dy, dm] = desdeVal.split('-').map(Number)
-    const [hy, hm] = hastaVal.split('-').map(Number)
-    desdeCustom = new Date(dy, dm - 1, 1)
-    hastaCustom = new Date(hy, hm - 1, 1)
+  let desdeCustom, hastaCustom;
+  if (exportPeriodo === "personalizado") {
+    const desdeVal = document.getElementById("exportDesde").value;
+    const hastaVal = document.getElementById("exportHasta").value;
+    if (!desdeVal || !hastaVal) {
+      notify("Completá el rango de fechas");
+      return;
+    }
+    const [dy, dm] = desdeVal.split("-").map(Number);
+    const [hy, hm] = hastaVal.split("-").map(Number);
+    desdeCustom = new Date(dy, dm - 1, 1);
+    hastaCustom = new Date(hy, hm - 1, 1);
   }
 
   const { desde, hasta } = calcularRango(
@@ -1017,40 +1025,58 @@ window.doExport = async function(formato) {
     state.month,
     state.year,
     desdeCustom,
-    hastaCustom
-  )
+    hastaCustom,
+  );
 
-  const opciones = { desde, hasta, tipos }
+  const opciones = { desde, hasta, tipos };
 
-  closeM('exportModal')
-  notify('Generando archivo...')
+  closeM("exportModal");
+  notify("Generando archivo...");
 
   try {
     // Traer TODAS las transacciones del rango desde Supabase
-    const { getTransactions } = await import('./db.js')
-    let todasLasTxs = []
-    let mes = desde.getMonth()
-    let anio = desde.getFullYear()
+    const { getTransactions } = await import("./db.js");
+    let todasLasTxs = [];
+    let mes = desde.getMonth();
+    let anio = desde.getFullYear();
 
     while (new Date(anio, mes, 1) <= hasta) {
-      const txsMes = await getTransactions(state.user.id, state.user.groupId, mes, anio)
-      todasLasTxs = [...todasLasTxs, ...txsMes]
-      mes++
-      if (mes > 11) { mes = 0; anio++ }
+      const txsMes = await getTransactions(
+        state.user.id,
+        state.user.groupId,
+        mes,
+        anio,
+      );
+      todasLasTxs = [...todasLasTxs, ...txsMes];
+      mes++;
+      if (mes > 11) {
+        mes = 0;
+        anio++;
+      }
     }
 
-    if (formato === 'excel') {
-      await exportarExcel(todasLasTxs, state.groupMembers, state.user.id, opciones)
-      notify('✓ Excel descargado')
+    if (formato === "excel") {
+      await exportarExcel(
+        todasLasTxs,
+        state.groupMembers,
+        state.user.id,
+        opciones,
+      );
+      notify("✓ Excel descargado");
     } else {
-      await exportarPDF(todasLasTxs, state.groupMembers, state.user.id, opciones)
-      notify('✓ PDF descargado')
+      await exportarPDF(
+        todasLasTxs,
+        state.groupMembers,
+        state.user.id,
+        opciones,
+      );
+      notify("✓ PDF descargado");
     }
   } catch (err) {
-    console.error('Error exportando:', err)
-    notify('Error al generar el archivo')
+    console.error("Error exportando:", err);
+    notify("Error al generar el archivo");
   }
-}
+};
 
 // ============================================
 // ARRANCAR

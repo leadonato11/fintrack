@@ -4,8 +4,8 @@
 // No sabe nada de la UI, solo de usuarios.
 // ============================================
 
-import { supabase } from './db.js'
-import { createGroup, getUserGroup } from './db.js'
+import { supabase } from "./db.js";
+import { createGroup, getUserGroup } from "./db.js";
 
 // ============================================
 // REGISTRO
@@ -17,19 +17,19 @@ export async function register(name, email, password) {
     email,
     password,
     options: {
-      data: { full_name: name } // guardamos el nombre en el perfil
-    }
-  })
+      data: { full_name: name }, // guardamos el nombre en el perfil
+    },
+  });
 
-  if (error) return { ok: false, message: traducirError(error.message) }
+  if (error) return { ok: false, message: traducirError(error.message) };
 
-  const userId = data.user.id
+  const userId = data.user.id;
 
   // 2. Crear un grupo propio para este usuario
   // (cuando invite a alguien, ese alguien entra a este grupo)
-  await createGroup(userId, name, email)
+  await createGroup(userId, name, email);
 
-  return { ok: true, user: data.user }
+  return { ok: true, user: data.user };
 }
 
 // ============================================
@@ -38,11 +38,11 @@ export async function register(name, email, password) {
 export async function login(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password
-  })
+    password,
+  });
 
-  if (error) return { ok: false, message: traducirError(error.message) }
-  return { ok: true, user: data.user }
+  if (error) return { ok: false, message: traducirError(error.message) };
+  return { ok: true, user: data.user };
 }
 
 // ============================================
@@ -51,22 +51,22 @@ export async function login(email, password) {
 // ============================================
 export async function loginWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
+    provider: "google",
     options: {
-      redirectTo: window.location.origin // vuelve a tu app después del login
-    }
-  })
+      redirectTo: window.location.origin, // vuelve a tu app después del login
+    },
+  });
 
-  if (error) return { ok: false, message: error.message }
-  return { ok: true }
+  if (error) return { ok: false, message: error.message };
+  return { ok: true };
 }
 
 // ============================================
 // LOGOUT
 // ============================================
 export async function logout() {
-  const { error } = await supabase.auth.signOut()
-  if (error) console.error('Error cerrando sesión:', error)
+  const { error } = await supabase.auth.signOut();
+  if (error) console.error("Error cerrando sesión:", error);
 }
 
 // ============================================
@@ -76,26 +76,29 @@ export async function logout() {
 // saber si el usuario ya estaba logueado antes
 // ============================================
 export async function getSession() {
-  const { data } = await supabase.auth.getSession()
-  if (!data.session) return null
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) return null;
 
-  const user = data.session.user
+  const user = data.session.user;
 
   // Traer el nombre desde profiles en lugar de los metadatos
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('name, email')
-    .eq('id', user.id)
-    .maybeSingle()
+    .from("profiles")
+    .select("name, email")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  const group = await getUserGroup(user.id)
+  const group = await getUserGroup(user.id);
 
   return {
     id: user.id,
-    name: profile?.name || user.user_metadata?.full_name || user.email.split('@')[0],
+    name:
+      profile?.name ||
+      user.user_metadata?.full_name ||
+      user.email.split("@")[0],
     email: user.email,
-    groupId: group?.group_id || null
-  }
+    groupId: group?.group_id || null,
+  };
 }
 
 // ============================================
@@ -106,8 +109,8 @@ export async function getSession() {
 // ============================================
 export function onAuthChange(callback) {
   supabase.auth.onAuthStateChange((event, session) => {
-    callback(event, session)
-  })
+    callback(event, session);
+  });
 }
 
 // ============================================
@@ -116,11 +119,13 @@ export function onAuthChange(callback) {
 // ============================================
 function traducirError(msg) {
   const errores = {
-    'Invalid login credentials': 'Email o contraseña incorrectos',
-    'Email not confirmed': 'Confirmá tu email antes de ingresar',
-    'User already registered': 'Ese email ya está registrado',
-    'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres',
-    'Unable to validate email address: invalid format': 'El formato del email no es válido'
-  }
-  return errores[msg] || msg
+    "Invalid login credentials": "Email o contraseña incorrectos",
+    "Email not confirmed": "Confirmá tu email antes de ingresar",
+    "User already registered": "Ese email ya está registrado",
+    "Password should be at least 6 characters":
+      "La contraseña debe tener al menos 6 caracteres",
+    "Unable to validate email address: invalid format":
+      "El formato del email no es válido",
+  };
+  return errores[msg] || msg;
 }

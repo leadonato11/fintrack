@@ -135,7 +135,8 @@ body {
   display: none;
   flex-direction: column;
   flex: 1;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
 }
 .screen.active { display: flex; }
 
@@ -187,14 +188,14 @@ body {
    ============================================ */
 .auth-screen {
   background: var(--card);
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: var(--space-lg) 1.5rem;
   gap: var(--space-md);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Decoración de fondo */
@@ -227,9 +228,9 @@ body {
 .auth-logo { text-align: center; }
 
 .logo-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 24px;
+  width: 100px;
+  height: 100px;
+  border-radius: 28px;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
@@ -247,10 +248,10 @@ body {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.5px;
-  background: var(--grad-header);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--celeste-dark);
+}
+[data-theme="dark"] .auth-logo h1 {
+  color: var(--celeste);
 }
 .auth-logo p {
   font-size: 14px;
@@ -897,32 +898,28 @@ input[type="number"] { appearance: textfield; }
 .fab {
   position: fixed;
   bottom: calc(1.5rem + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 3rem);
-  max-width: 370px;
+  right: 1.25rem;
+  width: 58px;
+  height: 58px;
   background: var(--grad-fab);
   color: #fff;
   border: none;
-  border-radius: 18px;
-  padding: 16px var(--space-lg);
+  border-radius: 50%;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   z-index: 80;
   box-shadow: var(--shadow-cel);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  letter-spacing: 0.3px;
 }
 .fab:hover  {
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px) scale(1.05);
   box-shadow: 0 8px 28px rgba(115, 172, 223, 0.5);
 }
-.fab:active { transform: translateX(-50%) scale(0.97); }
+.fab:active { transform: scale(0.95); }
 
 
 /* ============================================
@@ -1209,6 +1206,24 @@ body.special-cumple .fab {
 }
 .txi, .mcrd {
   animation: fadeIn 0.3s ease both;
+}
+
+/* ============================================
+   23. TRANSACCIONES DE OTRO USUARIO
+   Fondo levemente diferente para reconocer
+   gastos cargados por el otro miembro del grupo
+   ============================================ */
+.txi.by-other {
+  background: linear-gradient(145deg, #F0F4FF 0%, #E8EEFF 100%);
+  border-color: rgba(124, 111, 205, 0.25);
+}
+[data-theme="dark"] .txi.by-other {
+  background: linear-gradient(145deg, #1E2340 0%, #252A4A 100%);
+  border-color: rgba(124, 111, 205, 0.3);
+}
+.txi.by-other .txtit::after {
+  content: ' 👤';
+  font-size: 11px;
 }
 
 /* ============================================
