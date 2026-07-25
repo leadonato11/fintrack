@@ -814,11 +814,12 @@ input[type="number"] { appearance: textfield; }
 .theme-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: var(--space-md) 1.25rem;
-  border-bottom: 1px solid var(--border);
+  min-height: 56px;
 }
-.theme-toggle span { flex: 1; font-size: 15px; font-weight: 500; }
+.theme-toggle svg { color: var(--celeste-dark); flex-shrink: 0; }
+.theme-toggle > span { flex: 1; font-size: 15px; font-weight: 500; }
 .theme-btns {
   display: flex;
   background: var(--bg2);
@@ -836,6 +837,7 @@ input[type="number"] { appearance: textfield; }
   background: none;
   color: var(--text2);
   transition: all 0.2s;
+  white-space: nowrap;
 }
 .theme-btn.active {
   background: var(--celeste);
