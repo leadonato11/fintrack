@@ -792,7 +792,7 @@ input[type="number"] { appearance: textfield; }
   background: var(--grad-card);
   border-radius: var(--rad-lg);
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: var(--shadow-sm);
 }
 
