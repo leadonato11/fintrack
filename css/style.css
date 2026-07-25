@@ -1183,7 +1183,7 @@ body.special-cumple .fab {
     box-shadow: 0 0 40px rgba(0,0,0,0.15);
   }
   .fab {
-    max-width: 370px;
+    right: calc(50% - 430px/2 + 1.25rem);
   }
 }
 
