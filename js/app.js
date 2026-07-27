@@ -319,15 +319,27 @@ function renderShared() {
   );
 
   // Calcular quién le debe a quién
-  let debts = {};
-  txs.forEach((t) => {
-    const iAmPayer = t.payer_id === uid;
-    const partnerPart = (Number(t.amount) * Number(t.partner_pct)) / 100;
-    const myPart = (Number(t.amount) * Number(t.my_pct)) / 100;
-    const pid = iAmPayer ? t.partner_id : t.payer_id;
-    if (!pid) return;
-    debts[pid] = (debts[pid] || 0) + (iAmPayer ? partnerPart : -myPart);
-  });
+let debts = {}
+txs.forEach(t => {
+  const iAmPayer = t.payer_id === uid
+  const pid = iAmPayer ? t.partner_id : t.payer_id
+  if (!pid) return
+
+  let miParte, suParte
+  if (iAmPayer) {
+    // Yo pagué: my_pct es mi parte, partner_pct es la de ellos
+    miParte = Number(t.amount) * Number(t.my_pct) / 100
+    suParte = Number(t.amount) * Number(t.partner_pct) / 100
+  } else {
+    // El otro pagó: my_pct es su parte, partner_pct es la mía
+    miParte = Number(t.amount) * Number(t.partner_pct) / 100
+    suParte = Number(t.amount) * Number(t.my_pct) / 100
+  }
+
+  // Si yo pagué, el otro me debe su parte (positivo)
+  // Si el otro pagó, yo le debo mi parte (negativo)
+  debts[pid] = (debts[pid] || 0) + (iAmPayer ? suParte : -miParte)
+})
 
   // Mostrar banner de deudas
   let debtHtml = Object.entries(debts)
