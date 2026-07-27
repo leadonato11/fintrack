@@ -209,27 +209,26 @@ async function recargarTransacciones() {
 // CÁLCULOS
 // ============================================
 function calcSummary() {
-  const uid = state.user?.id;
-  let inc = 0,
-    exp = 0,
-    sh = 0;
+  const uid = state.user?.id
+  let inc = 0, exp = 0, sh = 0
 
-  state.transactions.forEach((t) => {
-    if (t.type === "income" && t.user_id === uid) inc += Number(t.amount);
-    else if (t.type === "expense" && t.user_id === uid) exp += Number(t.amount);
-    else if (t.type === "shared") {
-      const iAmPayer = t.payer_id === uid;
-      const involved =
-        t.user_id === uid || t.payer_id === uid || t.partner_id === uid;
-      if (!involved) return;
+  state.transactions.forEach(t => {
+    if (t.type === 'income' && t.user_id === uid) {
+      inc += Number(t.amount)
+    } else if (t.type === 'expense' && t.user_id === uid) {
+      exp += Number(t.amount)
+    } else if (t.type === 'shared') {
+      const iAmPayer = t.payer_id === uid
+      const involved = t.user_id === uid || t.payer_id === uid || t.partner_id === uid
+      if (!involved) return
       const myPart = iAmPayer
-        ? (Number(t.amount) * Number(t.my_pct)) / 100
-        : (Number(t.amount) * Number(t.partner_pct)) / 100;
-      sh += myPart;
-      if (!iAmPayer) exp += myPart;
+        ? Number(t.amount) * Number(t.my_pct) / 100
+        : Number(t.amount) * Number(t.partner_pct) / 100
+      sh += myPart
+      // NO sumar a exp — los compartidos van solo a sh
     }
-  });
-  return { inc, exp, sh };
+  })
+  return { inc, exp, sh }
 }
 
 function fmt(n) {
