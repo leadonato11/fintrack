@@ -695,12 +695,11 @@
         con punto decimal. Mucho mejor UX que el teclado de texto.
       -->
           <input
-            type="number"
+            type="text"
             id="txAmt"
             placeholder="0.00"
-            min="0"
-            step="any"
             inputmode="decimal"
+            pattern="[0-9]*[.,]?[0-9]*"
           />
         </div>
         <div id="descRow" class="frow">

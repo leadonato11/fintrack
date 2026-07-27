@@ -677,7 +677,7 @@ document.getElementById("pct1")?.addEventListener("input", function () {
 });
 
 window.saveTx = async function () {
-  const amount = parseFloat(document.getElementById("txAmt").value);
+  const amount = parseFloat(document.getElementById('txAmt').value.replace(',', '.'))
   const desc = document.getElementById("txDesc").value.trim();
   const cat = document.getElementById("txCat").value;
   const type = state.selectedType;
@@ -687,18 +687,36 @@ window.saveTx = async function () {
     return;
   }
 
-  // Verificar saldo disponible para gastos y compartidos
-  if (type === "expense" || type === "shared") {
+  // Solo validar saldo si es gasto propio
+  // o si soy yo quien paga en el compartido
+  if (type === "expense") {
     const { inc, exp, sh } = calcSummary();
     const sv = state.transactions
       .filter((t) => t.type === "saving" && t.user_id === state.user?.id)
       .reduce((s, t) => s + Number(t.amount), 0);
     const saldoDisponible = inc - exp - sh - sv;
-
     if (amount > saldoDisponible) {
-      // Mostrar confirmación
       const continuar = await mostrarConfirmacionSaldo(saldoDisponible, amount);
       if (!continuar) return;
+    }
+  }
+
+  if (type === "shared") {
+    const payerId = document.getElementById("txPayer").value;
+    // Solo validar saldo si YO soy quien paga
+    if (payerId === state.user.id) {
+      const { inc, exp, sh } = calcSummary();
+      const sv = state.transactions
+        .filter((t) => t.type === "saving" && t.user_id === state.user?.id)
+        .reduce((s, t) => s + Number(t.amount), 0);
+      const saldoDisponible = inc - exp - sh - sv;
+      if (amount > saldoDisponible) {
+        const continuar = await mostrarConfirmacionSaldo(
+          saldoDisponible,
+          amount,
+        );
+        if (!continuar) return;
+      }
     }
   }
 
@@ -725,11 +743,15 @@ window.saveTx = async function () {
     tx.partner_id = partnerId;
     tx.payer_id = payerId;
     if (state.pctMode) {
-      tx.my_pct = Math.min(
-        100,
-        Math.max(0, parseInt(document.getElementById("pct1").value) || 50),
-      );
-      tx.partner_pct = 100 - tx.my_pct;
+      const pct1Val = parseInt(document.getElementById("pct1").value);
+      const pct2Val = parseInt(document.getElementById("pct2").value);
+      tx.my_pct = isNaN(pct1Val) ? 50 : Math.min(100, Math.max(0, pct1Val));
+      tx.partner_pct = isNaN(pct2Val)
+        ? 50
+        : Math.min(100, Math.max(0, pct2Val));
+    } else {
+      tx.my_pct = 50;
+      tx.partner_pct = 50;
     }
   }
 

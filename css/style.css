@@ -598,7 +598,11 @@ input[type="number"] { appearance: textfield; }
   padding: var(--space-md) 1.25rem calc(7rem + env(safe-area-inset-bottom));
 }
 
-.tpanel.active { display: flex; flex-direction: column; }
+.tpanel.active {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
 
 .stitle {
   font-size: 11px;
