@@ -1291,3 +1291,23 @@ body.special-cumple .fab {
   background: var(--celeste-light);
   color: var(--celeste-dark);
 }
+
+/* Botón saldar deuda */
+.btn-saldar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: var(--space-md);
+  padding: 13px;
+  background: var(--success-light);
+  color: #1A7A4A;
+  border: 1.5px solid var(--success);
+  border-radius: var(--rad-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-saldar:hover { background: #C8F0DC; }

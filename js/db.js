@@ -189,3 +189,40 @@ export async function invitarUsuario(email, groupId) {
 
   return data;
 }
+
+// Registrar pago de deuda
+export async function saldarDeuda(
+  userId,
+  groupId,
+  partnerId,
+  amount,
+  month,
+  year,
+) {
+  const { data, error } = await supabase
+    .from("transactions")
+    .insert([
+      {
+        type: "payment",
+        amount,
+        description: "Saldo de deuda",
+        category: "general",
+        user_id: userId,
+        group_id: groupId,
+        month,
+        year,
+        payer_id: userId,
+        partner_id: partnerId,
+        my_pct: 100,
+        partner_pct: 0,
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error saldando deuda:", error);
+    return null;
+  }
+  return data;
+}

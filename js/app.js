@@ -30,6 +30,18 @@ import { initTheme, checkDiaEspecial, applyTheme } from "./theme.js";
 
 import { exportarExcel, exportarPDF, calcularRango } from "./export.js";
 
+import {
+  getTransactions,
+  saveTransaction,
+  deleteTransaction,
+  getUserGroup,
+  getGroupMembers,
+  createGroup,
+  addMemberToGroup,
+  invitarUsuario,
+  saldarDeuda,
+} from "./db.js";
+
 // ============================================
 // ESTADO GLOBAL
 // Una sola variable que tiene todo lo que
@@ -315,35 +327,44 @@ function renderExpense() {
 
 function renderShared() {
   const uid = state.user?.id;
-  const txs = state.transactions.filter(
-    (t) =>
-      t.type === "shared" &&
-      (t.user_id === uid || t.payer_id === uid || t.partner_id === uid),
-  );
+  const txs = state.transactions
+    .filter(
+      (t) =>
+        (t.type === "shared" || t.type === "payment") &&
+        (t.user_id === uid || t.payer_id === uid || t.partner_id === uid),
+    )
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  // Calcular quién le debe a quién
+  // Calcular balance neto por persona
   let debts = {};
   txs.forEach((t) => {
     const iAmPayer = t.payer_id === uid;
     const pid = iAmPayer ? t.partner_id : t.payer_id;
     if (!pid) return;
 
+    if (t.type === "payment") {
+      // Pago de deuda — quien pagó reduce lo que debe
+      if (iAmPayer) {
+        // Yo pagué para saldar mi deuda con el otro
+        debts[pid] = (debts[pid] || 0) + Number(t.amount);
+      } else {
+        // El otro pagó para saldar su deuda conmigo
+        debts[pid] = (debts[pid] || 0) - Number(t.amount);
+      }
+      return;
+    }
+
+    // Gasto compartido normal
     if (iAmPayer) {
-      // Yo pagué — el otro me debe su parte
       const suParte = (Number(t.amount) * Number(t.partner_pct)) / 100;
-      // Si yo pagué el 100% para saldar una deuda, resto lo que me debían
-      const miPago = (Number(t.amount) * Number(t.my_pct)) / 100;
-      debts[pid] = (debts[pid] || 0) + suParte - (t.my_pct == 100 ? miPago : 0);
+      debts[pid] = (debts[pid] || 0) + suParte;
     } else {
-      // El otro pagó — yo le debo mi parte
       const miParte = (Number(t.amount) * Number(t.partner_pct)) / 100;
-      // Si el otro pagó el 100% para saldarme, resto lo que les debía
-      const suPago = (Number(t.amount) * Number(t.my_pct)) / 100;
-      debts[pid] = (debts[pid] || 0) - miParte + (t.my_pct == 100 ? suPago : 0);
+      debts[pid] = (debts[pid] || 0) - miParte;
     }
   });
 
-  // Netear todas las deudas en un solo balance por persona
+  // Banner de deudas
   let debtHtml = Object.entries(debts)
     .map(([pid, amt]) => {
       const partner = state.groupMembers.find((m) => m.id === pid);
@@ -352,9 +373,15 @@ function renderShared() {
       const neto = Math.round(amt);
       if (neto === 0) return "";
       if (neto > 0) {
-        return `<div class="drow"><span>${esc(nombre)} te debe</span><span style="color:var(--success)">${fmt(Math.abs(neto))}</span></div>`;
+        return `<div class="drow">
+        <span>${esc(nombre)} te debe</span>
+        <span style="color:var(--success)">${fmt(Math.abs(neto))}</span>
+      </div>`;
       } else {
-        return `<div class="drow"><span>Debés a ${esc(nombre)}</span><span style="color:var(--danger)">${fmt(Math.abs(neto))}</span></div>`;
+        return `<div class="drow">
+        <span>Debés a ${esc(nombre)}</span>
+        <span style="color:var(--danger)">${fmt(Math.abs(neto))}</span>
+      </div>`;
       }
     })
     .filter(Boolean)
@@ -363,23 +390,105 @@ function renderShared() {
   document.getElementById("dbtSum").innerHTML = debtHtml
     ? `<div class="dbtbanner"><div class="dtit">Balance del mes</div>${debtHtml}</div>`
     : "";
-  document.getElementById("shList").innerHTML = txs.length
-    ? txs.map((t) => sharedCard(t)).join("")
-    : empty("No hay gastos compartidos este mes");
 
-  // Badge en tab de compartidos
+  // Botón "Saldar deuda" — solo aparece si VOS debés
+  const miDeuda = Object.entries(debts).find(
+    ([pid, amt]) => Math.round(amt) < 0,
+  );
+  const saldarBtn = document.getElementById("saldarBtn");
+  if (saldarBtn) saldarBtn.remove();
+
+  if (miDeuda) {
+    const [pid, amt] = miDeuda;
+    const partner = state.groupMembers.find((m) => m.id === pid);
+    const nombre = partner?.name || "el otro";
+    const monto = Math.abs(Math.round(amt));
+
+    const btn = document.createElement("button");
+    btn.id = "saldarBtn";
+    btn.className = "btn-saldar";
+    btn.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Saldar deuda con ${esc(nombre)} — ${fmt(monto)}
+    `;
+    btn.onclick = () => confirmarSaldo(pid, monto, nombre);
+    document.getElementById("dbtSum").appendChild(btn);
+  }
+
+  // Badge en tab
   const tabShared = document.getElementById("ti-shared");
-  const badgeExistente = tabShared.querySelector(".tab-badge");
+  const badgeExistente = tabShared?.querySelector(".tab-badge");
   if (badgeExistente) badgeExistente.remove();
-
-  // Badge solo cuando YO debo a alguien (valor negativo)
-  const tengoDeudas = Object.values(debts).some((amt) => amt < 0);
-  if (tengoDeudas) {
+  if (miDeuda) {
     const badge = document.createElement("span");
     badge.className = "tab-badge";
     badge.textContent = "!";
-    tabShared.appendChild(badge);
+    tabShared?.appendChild(badge);
   }
+
+  document.getElementById("shList").innerHTML = txs.length
+    ? txs
+        .map((t) => (t.type === "payment" ? paymentCard(t) : sharedCard(t)))
+        .join("")
+    : empty("No hay gastos compartidos este mes");
+}
+
+async function confirmarSaldo(partnerId, monto, nombre) {
+  const continuar = await mostrarConfirmacionSaldo(
+    monto,
+    monto,
+    `¿Confirmás que le pagaste ${fmt(monto)} a ${nombre}?`,
+    true,
+  );
+  if (!continuar) return;
+
+  const saved = await saldarDeuda(
+    state.user.id,
+    state.user.groupId,
+    partnerId,
+    monto,
+    state.month,
+    state.year,
+  );
+  if (!saved) {
+    notify("Error al registrar el pago");
+    return;
+  }
+  state.transactions.unshift(saved);
+  renderAll();
+  notify(`✓ Deuda con ${nombre} saldada`);
+}
+
+function paymentCard(t) {
+  const uid = state.user?.id;
+  const iAmPayer = t.payer_id === uid;
+  const partnerId = iAmPayer ? t.partner_id : t.payer_id;
+  const partner = state.groupMembers.find((m) => m.id === partnerId);
+  const nombre = partner?.name || "otro";
+  const texto = iAmPayer
+    ? `Le pagaste a ${esc(nombre)}`
+    : `${esc(nombre)} te pagó`;
+  const canDel = t.user_id === uid || t.payer_id === uid;
+
+  return `<div class="txi" style="border-color: var(--success); background: var(--success-light)">
+    <div class="txico in">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div class="txbody">
+      <div class="txtit">Pago de deuda</div>
+      <div class="txsub">${texto}</div>
+    </div>
+    <div>
+      <div class="txamt v-green">${fmt(Number(t.amount))}</div>
+      ${
+        canDel
+          ? `<button class="txdel" onclick="delTx('${t.id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>`
+          : ""
+      }
+    </div>
+  </div>`;
 }
 
 let svChart = null;
@@ -784,56 +893,44 @@ window.saveTx = async function () {
   );
 };
 
-function mostrarConfirmacionSaldo(saldoDisponible, montoIngresado) {
-  return new Promise((resolve) => {
-    // Crear modal de confirmación dinámicamente
-    const overlay = document.createElement("div");
+function mostrarConfirmacionSaldo(saldoDisponible, montoIngresado, mensajeCustom = null, esSaldo = false) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div')
     overlay.style.cssText = `
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       z-index: 200; display: flex; align-items: center;
       justify-content: center; padding: 1.5rem;
-    `;
-
-    const esNegativo = saldoDisponible <= 0;
+    `
+    const esNegativo = saldoDisponible <= 0
+    const mensaje = mensajeCustom || (esNegativo
+      ? `No tenés saldo disponible. Este gasto de <strong>${fmt(montoIngresado)}</strong> va a generar un déficit.`
+      : `Tu saldo disponible es <strong>${fmt(saldoDisponible)}</strong> y estás por gastar <strong>${fmt(montoIngresado)}</strong>.`)
 
     overlay.innerHTML = `
       <div style="background: var(--card); border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 340px;">
         <div style="text-align:center; margin-bottom: 1rem;">
-          <span style="font-size: 36px">${esNegativo ? "🚨" : "⚠️"}</span>
+          <span style="font-size: 36px">${esSaldo ? '💸' : (esNegativo ? '🚨' : '⚠️')}</span>
         </div>
         <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px; text-align:center;">
-          ${esNegativo ? "Sin saldo disponible" : "Saldo insuficiente"}
+          ${esSaldo ? 'Confirmar pago' : (esNegativo ? 'Sin saldo disponible' : 'Saldo insuficiente')}
         </h3>
         <p style="font-size: 14px; color: var(--text2); text-align:center; margin-bottom: 1.25rem; line-height:1.5">
-          ${
-            esNegativo
-              ? `No tenés saldo disponible. Este gasto de <strong>${fmt(montoIngresado)}</strong> va a generar un déficit.`
-              : `Tu saldo disponible es <strong>${fmt(saldoDisponible)}</strong> y estás por gastar <strong>${fmt(montoIngresado)}</strong>.`
-          }
-          <br><br>¿Querés registrarlo igual?
+          ${mensaje}
         </p>
         <div style="display:flex; gap: 10px;">
           <button id="btnCancelarSaldo" style="flex:1; padding:12px; border: 1px solid var(--border); border-radius: 10px; background: none; font-size:14px; cursor:pointer; color: var(--text2);">
             Cancelar
           </button>
-          <button id="btnConfirmarSaldo" style="flex:1; padding:12px; background: var(--danger); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
-            Registrar igual
+          <button id="btnConfirmarSaldo" style="flex:1; padding:12px; background: var(--${esSaldo ? 'success' : 'danger'}); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+            ${esSaldo ? 'Confirmar' : 'Registrar igual'}
           </button>
         </div>
       </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    document.getElementById("btnConfirmarSaldo").onclick = () => {
-      document.body.removeChild(overlay);
-      resolve(true);
-    };
-    document.getElementById("btnCancelarSaldo").onclick = () => {
-      document.body.removeChild(overlay);
-      resolve(false);
-    };
-  });
+    `
+    document.body.appendChild(overlay)
+    document.getElementById('btnConfirmarSaldo').onclick = () => { document.body.removeChild(overlay); resolve(true) }
+    document.getElementById('btnCancelarSaldo').onclick = () => { document.body.removeChild(overlay); resolve(false) }
+  })
 }
 
 window.delTx = async function (id) {
