@@ -24,23 +24,12 @@ import {
   createGroup,
   addMemberToGroup,
   invitarUsuario,
+  saldarDeuda,
 } from "./db.js";
 
 import { initTheme, checkDiaEspecial, applyTheme } from "./theme.js";
 
 import { exportarExcel, exportarPDF, calcularRango } from "./export.js";
-
-import {
-  getTransactions,
-  saveTransaction,
-  deleteTransaction,
-  getUserGroup,
-  getGroupMembers,
-  createGroup,
-  addMemberToGroup,
-  invitarUsuario,
-  saldarDeuda,
-} from "./db.js";
 
 // ============================================
 // ESTADO GLOBAL
