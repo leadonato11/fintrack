@@ -328,20 +328,19 @@ function renderShared() {
     const pid = iAmPayer ? t.partner_id : t.payer_id;
     if (!pid) return;
 
-    let miParte, suParte;
     if (iAmPayer) {
-      // Yo pagué: my_pct es mi parte, partner_pct es la de ellos
-      miParte = (Number(t.amount) * Number(t.my_pct)) / 100;
-      suParte = (Number(t.amount) * Number(t.partner_pct)) / 100;
+      // Yo pagué — el otro me debe su parte
+      const suParte = (Number(t.amount) * Number(t.partner_pct)) / 100;
+      // Si yo pagué el 100% para saldar una deuda, resto lo que me debían
+      const miPago = (Number(t.amount) * Number(t.my_pct)) / 100;
+      debts[pid] = (debts[pid] || 0) + suParte - (t.my_pct == 100 ? miPago : 0);
     } else {
-      // El otro pagó: my_pct es su parte, partner_pct es la mía
-      miParte = (Number(t.amount) * Number(t.partner_pct)) / 100;
-      suParte = (Number(t.amount) * Number(t.my_pct)) / 100;
+      // El otro pagó — yo le debo mi parte
+      const miParte = (Number(t.amount) * Number(t.partner_pct)) / 100;
+      // Si el otro pagó el 100% para saldarme, resto lo que les debía
+      const suPago = (Number(t.amount) * Number(t.my_pct)) / 100;
+      debts[pid] = (debts[pid] || 0) - miParte + (t.my_pct == 100 ? suPago : 0);
     }
-
-    // Si yo pagué, el otro me debe su parte (positivo)
-    // Si el otro pagó, yo le debo mi parte (negativo)
-    debts[pid] = (debts[pid] || 0) + (iAmPayer ? suParte : -miParte);
   });
 
   // Netear todas las deudas en un solo balance por persona
