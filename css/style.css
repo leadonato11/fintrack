@@ -1300,7 +1300,8 @@ body.special-cumple .fab {
   gap: 8px;
   width: 100%;
   margin-top: var(--space-md);
-  padding: 13px;
+  margin-bottom: var(--space-sm);
+  padding: 14px;
   background: var(--success-light);
   color: #1A7A4A;
   border: 1.5px solid var(--success);
@@ -1308,6 +1309,16 @@ body.special-cumple .fab {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 .btn-saldar:hover { background: #C8F0DC; }
+
+/* Modo oscuro */
+[data-theme="dark"] .btn-saldar {
+  background: rgba(61, 190, 122, 0.15);
+  color: #5DDB9A;
+  border-color: rgba(61, 190, 122, 0.4);
+}
+[data-theme="dark"] .btn-saldar:hover {
+  background: rgba(61, 190, 122, 0.25);
+}
