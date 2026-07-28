@@ -229,7 +229,9 @@ function calcSummary() {
         ? (Number(t.amount) * Number(t.my_pct)) / 100
         : (Number(t.amount) * Number(t.partner_pct)) / 100;
       sh += myPart;
-      // NO sumar a exp — los compartidos van solo a sh
+    } else if (t.type === "payment" && t.payer_id === uid) {
+      // Un pago de deuda sale de tu bolsillo
+      sh += Number(t.amount);
     }
   });
   return { inc, exp, sh };
