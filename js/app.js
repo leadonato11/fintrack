@@ -209,27 +209,26 @@ async function recargarTransacciones() {
 // CÁLCULOS
 // ============================================
 function calcSummary() {
-  const uid = state.user?.id;
-  let inc = 0,
-    exp = 0,
-    sh = 0;
+  const uid = state.user?.id
+  let inc = 0, exp = 0, sh = 0
 
-  state.transactions.forEach((t) => {
-    if (t.type === "income" && t.user_id === uid) inc += Number(t.amount);
-    else if (t.type === "expense" && t.user_id === uid) exp += Number(t.amount);
-    else if (t.type === "shared") {
-      const iAmPayer = t.payer_id === uid;
-      const involved =
-        t.user_id === uid || t.payer_id === uid || t.partner_id === uid;
-      if (!involved) return;
+  state.transactions.forEach(t => {
+    if (t.type === 'income' && t.user_id === uid) {
+      inc += Number(t.amount)
+    } else if (t.type === 'expense' && t.user_id === uid) {
+      exp += Number(t.amount)
+    } else if (t.type === 'shared') {
+      const iAmPayer = t.payer_id === uid
+      const involved = t.user_id === uid || t.payer_id === uid || t.partner_id === uid
+      if (!involved) return
       const myPart = iAmPayer
-        ? (Number(t.amount) * Number(t.my_pct)) / 100
-        : (Number(t.amount) * Number(t.partner_pct)) / 100;
-      sh += myPart;
-      if (!iAmPayer) exp += myPart;
+        ? Number(t.amount) * Number(t.my_pct) / 100
+        : Number(t.amount) * Number(t.partner_pct) / 100
+      sh += myPart
+      // NO sumar a exp — los compartidos van solo a sh
     }
-  });
-  return { inc, exp, sh };
+  })
+  return { inc, exp, sh }
 }
 
 function fmt(n) {
@@ -320,15 +319,27 @@ function renderShared() {
   );
 
   // Calcular quién le debe a quién
-  let debts = {};
-  txs.forEach((t) => {
-    const iAmPayer = t.payer_id === uid;
-    const partnerPart = (Number(t.amount) * Number(t.partner_pct)) / 100;
-    const myPart = (Number(t.amount) * Number(t.my_pct)) / 100;
-    const pid = iAmPayer ? t.partner_id : t.payer_id;
-    if (!pid) return;
-    debts[pid] = (debts[pid] || 0) + (iAmPayer ? partnerPart : -myPart);
-  });
+let debts = {}
+txs.forEach(t => {
+  const iAmPayer = t.payer_id === uid
+  const pid = iAmPayer ? t.partner_id : t.payer_id
+  if (!pid) return
+
+  let miParte, suParte
+  if (iAmPayer) {
+    // Yo pagué: my_pct es mi parte, partner_pct es la de ellos
+    miParte = Number(t.amount) * Number(t.my_pct) / 100
+    suParte = Number(t.amount) * Number(t.partner_pct) / 100
+  } else {
+    // El otro pagó: my_pct es su parte, partner_pct es la mía
+    miParte = Number(t.amount) * Number(t.partner_pct) / 100
+    suParte = Number(t.amount) * Number(t.my_pct) / 100
+  }
+
+  // Si yo pagué, el otro me debe su parte (positivo)
+  // Si el otro pagó, yo le debo mi parte (negativo)
+  debts[pid] = (debts[pid] || 0) + (iAmPayer ? suParte : -miParte)
+})
 
   // Netear todas las deudas en un solo balance por persona
   let debtHtml = Object.entries(debts)
