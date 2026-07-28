@@ -330,27 +330,21 @@ function renderShared() {
     debts[pid] = (debts[pid] || 0) + (iAmPayer ? partnerPart : -myPart);
   });
 
-  // Mostrar banner de deudas
+  // Netear todas las deudas en un solo balance por persona
   let debtHtml = Object.entries(debts)
     .map(([pid, amt]) => {
-      const name = nombreDeUsuario(pid);
-      if (Math.round(Math.abs(amt)) === 0) return "";
-      return `<div class="drow">
-      ${
-        amt > 0
-          ? `<span>${esc(
-              name,
-            )} te debe</span><span style="color:var(--accent)">${fmt(
-              Math.abs(amt),
-            )}</span>`
-          : `<span>Debés a ${esc(
-              name,
-            )}</span><span style="color:var(--danger)">${fmt(
-              Math.abs(amt),
-            )}</span>`
+      const partner = state.groupMembers.find((m) => m.id === pid);
+      if (!partner) return "";
+      const nombre = partner.name || partner.email?.split("@")[0];
+      const neto = Math.round(amt);
+      if (neto === 0) return "";
+      if (neto > 0) {
+        return `<div class="drow"><span>${esc(nombre)} te debe</span><span style="color:var(--success)">${fmt(Math.abs(neto))}</span></div>`;
+      } else {
+        return `<div class="drow"><span>Debés a ${esc(nombre)}</span><span style="color:var(--danger)">${fmt(Math.abs(neto))}</span></div>`;
       }
-    </div>`;
     })
+    .filter(Boolean)
     .join("");
 
   document.getElementById("dbtSum").innerHTML = debtHtml
@@ -677,7 +671,9 @@ document.getElementById("pct1")?.addEventListener("input", function () {
 });
 
 window.saveTx = async function () {
-  const amount = parseFloat(document.getElementById('txAmt').value.replace(',', '.'))
+  const amount = parseFloat(
+    document.getElementById("txAmt").value.replace(",", "."),
+  );
   const desc = document.getElementById("txDesc").value.trim();
   const cat = document.getElementById("txCat").value;
   const type = state.selectedType;
