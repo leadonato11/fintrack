@@ -1322,3 +1322,23 @@ body.special-cumple .fab {
 [data-theme="dark"] .btn-saldar:hover {
   background: rgba(61, 190, 122, 0.25);
 }
+
+/* Tarjeta de pago de deuda */
+.payment-card {
+  border-color: var(--success) !important;
+}
+.payment-card .txtit {
+  color: #1A7A4A;
+  font-weight: 700;
+}
+.payment-card .txsub {
+  color: #2A6A4A;
+}
+
+/* Modo oscuro */
+[data-theme="dark"] .payment-card .txtit {
+  color: #5DDB9A;
+}
+[data-theme="dark"] .payment-card .txsub {
+  color: #4ABF82;
+}

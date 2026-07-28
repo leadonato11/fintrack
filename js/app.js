@@ -459,7 +459,7 @@ function paymentCard(t) {
     : `${esc(nombre)} te pagó`;
   const canDel = t.user_id === uid || t.payer_id === uid;
 
-  return `<div class="txi" style="border-color: var(--success); background: var(--success-light)">
+  return `<div class="txi payment-card">
     <div class="txico in">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     </div>
@@ -882,26 +882,33 @@ window.saveTx = async function () {
   );
 };
 
-function mostrarConfirmacionSaldo(saldoDisponible, montoIngresado, mensajeCustom = null, esSaldo = false) {
-  return new Promise(resolve => {
-    const overlay = document.createElement('div')
+function mostrarConfirmacionSaldo(
+  saldoDisponible,
+  montoIngresado,
+  mensajeCustom = null,
+  esSaldo = false,
+) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
     overlay.style.cssText = `
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       z-index: 200; display: flex; align-items: center;
       justify-content: center; padding: 1.5rem;
-    `
-    const esNegativo = saldoDisponible <= 0
-    const mensaje = mensajeCustom || (esNegativo
-      ? `No tenés saldo disponible. Este gasto de <strong>${fmt(montoIngresado)}</strong> va a generar un déficit.`
-      : `Tu saldo disponible es <strong>${fmt(saldoDisponible)}</strong> y estás por gastar <strong>${fmt(montoIngresado)}</strong>.`)
+    `;
+    const esNegativo = saldoDisponible <= 0;
+    const mensaje =
+      mensajeCustom ||
+      (esNegativo
+        ? `No tenés saldo disponible. Este gasto de <strong>${fmt(montoIngresado)}</strong> va a generar un déficit.`
+        : `Tu saldo disponible es <strong>${fmt(saldoDisponible)}</strong> y estás por gastar <strong>${fmt(montoIngresado)}</strong>.`);
 
     overlay.innerHTML = `
       <div style="background: var(--card); border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 340px;">
         <div style="text-align:center; margin-bottom: 1rem;">
-          <span style="font-size: 36px">${esSaldo ? '💸' : (esNegativo ? '🚨' : '⚠️')}</span>
+          <span style="font-size: 36px">${esSaldo ? "💸" : esNegativo ? "🚨" : "⚠️"}</span>
         </div>
         <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px; text-align:center;">
-          ${esSaldo ? 'Confirmar pago' : (esNegativo ? 'Sin saldo disponible' : 'Saldo insuficiente')}
+          ${esSaldo ? "Confirmar pago" : esNegativo ? "Sin saldo disponible" : "Saldo insuficiente"}
         </h3>
         <p style="font-size: 14px; color: var(--text2); text-align:center; margin-bottom: 1.25rem; line-height:1.5">
           ${mensaje}
@@ -910,16 +917,22 @@ function mostrarConfirmacionSaldo(saldoDisponible, montoIngresado, mensajeCustom
           <button id="btnCancelarSaldo" style="flex:1; padding:12px; border: 1px solid var(--border); border-radius: 10px; background: none; font-size:14px; cursor:pointer; color: var(--text2);">
             Cancelar
           </button>
-          <button id="btnConfirmarSaldo" style="flex:1; padding:12px; background: var(--${esSaldo ? 'success' : 'danger'}); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
-            ${esSaldo ? 'Confirmar' : 'Registrar igual'}
+          <button id="btnConfirmarSaldo" style="flex:1; padding:12px; background: var(--${esSaldo ? "success" : "danger"}); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+            ${esSaldo ? "Confirmar" : "Registrar igual"}
           </button>
         </div>
       </div>
-    `
-    document.body.appendChild(overlay)
-    document.getElementById('btnConfirmarSaldo').onclick = () => { document.body.removeChild(overlay); resolve(true) }
-    document.getElementById('btnCancelarSaldo').onclick = () => { document.body.removeChild(overlay); resolve(false) }
-  })
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById("btnConfirmarSaldo").onclick = () => {
+      document.body.removeChild(overlay);
+      resolve(true);
+    };
+    document.getElementById("btnCancelarSaldo").onclick = () => {
+      document.body.removeChild(overlay);
+      resolve(false);
+    };
+  });
 }
 
 window.delTx = async function (id) {
