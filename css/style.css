@@ -602,6 +602,8 @@ input[type="number"] { appearance: textfield; }
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
 }
 
 .stitle {
