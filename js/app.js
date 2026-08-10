@@ -210,31 +210,25 @@ async function recargarTransacciones() {
 // CÁLCULOS
 // ============================================
 function calcSummary() {
-  const uid = state.user?.id;
-  let inc = 0,
-    exp = 0,
-    sh = 0;
+  const uid = state.user?.id
+  let inc = 0, exp = 0, sh = 0
 
-  state.transactions.forEach((t) => {
-    if (t.type === "income" && t.user_id === uid) {
-      inc += Number(t.amount);
-    } else if (t.type === "expense" && t.user_id === uid) {
-      exp += Number(t.amount);
-    } else if (t.type === "shared") {
-      const iAmPayer = t.payer_id === uid;
-      const involved =
-        t.user_id === uid || t.payer_id === uid || t.partner_id === uid;
-      if (!involved) return;
-      const myPart = iAmPayer
-        ? (Number(t.amount) * Number(t.my_pct)) / 100
-        : (Number(t.amount) * Number(t.partner_pct)) / 100;
-      sh += myPart;
-    } else if (t.type === "payment" && t.payer_id === uid) {
-      // Un pago de deuda sale de tu bolsillo
-      sh += Number(t.amount);
+  state.transactions.forEach(t => {
+    if (t.type === 'income' && t.user_id === uid) {
+      inc += Number(t.amount)
+    } else if (t.type === 'expense' && t.user_id === uid) {
+      exp += Number(t.amount)
+    } else if (t.type === 'shared') {
+      const iAmPayer = t.payer_id === uid
+      if (!iAmPayer) return // Si no pagué yo, no resta del saldo libre
+      // Solo sumo lo que YO pagué de mi parte
+      const miParte = Number(t.amount) * Number(t.my_pct) / 100
+      sh += miParte
+    } else if (t.type === 'payment' && t.payer_id === uid) {
+      sh += Number(t.amount)
     }
-  });
-  return { inc, exp, sh };
+  })
+  return { inc, exp, sh }
 }
 
 function fmt(n) {
