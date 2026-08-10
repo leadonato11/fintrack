@@ -779,7 +779,7 @@ document.getElementById("pct1")?.addEventListener("input", function () {
 
 window.saveTx = async function () {
   const amount = parseFloat(
-    document.getElementById("txAmt").value.replace(",", "."),
+    document.getElementById("txAmt").value.replace(",", ".")
   );
   const desc = document.getElementById("txDesc").value.trim();
   const cat = document.getElementById("txCat").value;
@@ -791,7 +791,6 @@ window.saveTx = async function () {
   }
 
   // Solo validar saldo si es gasto propio
-  // o si soy yo quien paga en el compartido
   if (type === "expense") {
     const { inc, exp, sh } = calcSummary();
     const sv = state.transactions
@@ -804,9 +803,9 @@ window.saveTx = async function () {
     }
   }
 
+  // Solo validar saldo si YO soy quien paga en compartido
   if (type === "shared") {
     const payerId = document.getElementById("txPayer").value;
-    // Solo validar saldo si YO soy quien paga
     if (payerId === state.user.id) {
       const { inc, exp, sh } = calcSummary();
       const sv = state.transactions
@@ -814,10 +813,7 @@ window.saveTx = async function () {
         .reduce((s, t) => s + Number(t.amount), 0);
       const saldoDisponible = inc - exp - sh - sv;
       if (amount > saldoDisponible) {
-        const continuar = await mostrarConfirmacionSaldo(
-          saldoDisponible,
-          amount,
-        );
+        const continuar = await mostrarConfirmacionSaldo(saldoDisponible, amount);
         if (!continuar) return;
       }
     }
@@ -839,19 +835,28 @@ window.saveTx = async function () {
   if (type === "shared") {
     const partnerId = document.getElementById("txPartner").value;
     const payerId = document.getElementById("txPayer").value;
+
     if (!partnerId) {
       notify("No hay compañeros en el grupo todavía");
       return;
     }
-    tx.partner_id = partnerId;
+
+    // Evitar que payer y partner sean la misma persona
+    if (payerId === partnerId) {
+      notify("El pagador y el compañero no pueden ser la misma persona");
+      return;
+    }
+
     tx.payer_id = payerId;
+    // Si yo soy el pagador, partner es el otro
+    // Si el otro es el pagador, partner soy yo
+    tx.partner_id = payerId === state.user.id ? partnerId : state.user.id;
+
     if (state.pctMode) {
       const pct1Val = parseInt(document.getElementById("pct1").value);
       const pct2Val = parseInt(document.getElementById("pct2").value);
       tx.my_pct = isNaN(pct1Val) ? 50 : Math.min(100, Math.max(0, pct1Val));
-      tx.partner_pct = isNaN(pct2Val)
-        ? 50
-        : Math.min(100, Math.max(0, pct2Val));
+      tx.partner_pct = isNaN(pct2Val) ? 50 : Math.min(100, Math.max(0, pct2Val));
     } else {
       tx.my_pct = 50;
       tx.partner_pct = 50;
@@ -869,12 +874,7 @@ window.saveTx = async function () {
   renderAll();
   notify("¡Guardado! ✓");
   showTab(
-    {
-      income: "income",
-      expense: "expense",
-      shared: "shared",
-      saving: "savings",
-    }[type] || "income",
+    { income: "income", expense: "expense", shared: "shared", saving: "savings" }[type] || "income"
   );
 };
 
